@@ -1,0 +1,48 @@
+import os
+
+
+
+class RequestURL:
+    def __init__(self):
+        self.MEGA_URL_LIST_COMMAND_UNTESTED = os.environ.get('MEGA_URL_LIST_COMMAND_UNTESTED')
+        self.MEGA_URL_COMMAND_UPDATE = os.environ.get('MEGA_URL_COMMAND_UPDATE')
+        self.MEGA_URL_COMMAND_DETAIL = os.environ.get('MEGA_URL_COMMAND_DETAIL')
+        self.URL_GET_DEVICE_DETAIL = os.environ.get('URL_GET_DEVICE_DETAIL')
+
+        self.MEGA_URL_COMMANDLOG_GETBY_COMMANDID = os.environ.get('MEGA_URL_COMMANDLOG_GETBY_COMMANDID')
+        self.MEGA_URL_COMMANDLOG_CREATE = os.environ.get('MEGA_URL_COMMANDLOG_CREATE')
+        self.MEGA_URL_COMMANDLOG_UPDATE = os.environ.get('MEGA_URL_COMMANDLOG_UPDATE')
+
+        self.MEGA_URL_LIST_ACTION_UNTESTED = os.environ.get('MEGA_URL_LIST_ACTION_UNTESTED')
+        self.MEGA_URL_ACTION_UPDATE = os.environ.get('MEGA_URL_ACTION_UPDATE')
+        self.MEGA_URL_ACTION_DETAIL = os.environ.get('MEGA_URL_ACTION_DETAIL')
+        self.MEGA_URL_ACTIONLOG_GETBY_ACTIONID = os.environ.get('MEGA_URL_ACTIONLOG_GETBY_ACTIONID')
+        self.MEGA_URL_ACTIONLOG_CREATE = os.environ.get('MEGA_URL_ACTIONLOG_CREATE')
+        self.MEGA_URL_ACTIONLOG_UPDATE = os.environ.get('MEGA_URL_ACTIONLOG_UPDATE')
+
+
+        self.MEGA_URL_LIST_TEMPLATE_UNTESTED = os.environ.get('MEGA_URL_LIST_TEMPLATE_UNTESTED')
+        self.MEGA_URL_TEMPLATE_DISCOVERY = os.environ.get('MEGA_URL_TEMPLATE_DISCOVERY')
+
+
+        self.MEGA_URL_TEMPLATELOG_GETBY_TEMPLATEID = os.environ.get('MEGA_URL_TEMPLATELOG_GETBY_TEMPLATEID')
+        self.MEGA_URL_TEMPLATELOG_CREATE = os.environ.get('MEGA_URL_TEMPLATELOG_CREATE')
+        self.MEGA_URL_TEMPLATELOG_UPDATE = os.environ.get('MEGA_URL_TEMPLATELOG_UPDATE')
+        self.MEGA_URL_TEMPLATE_UPDATE = os.environ.get('MEGA_URL_TEMPLATE_UPDATE')
+        self.MEGA_URL_TEMPLATE_DETAIL = os.environ.get('MEGA_URL_TEMPLATE_DETAIL')
+
+
+        self.FLASK_URL_MOP = os.environ.get('FLASK_URL_MOP')
+        self.FLASK_URL_MOP_UPDATE = os.environ.get('FLASK_URL_MOP_UPDATE')
+
+        self.FLASK_URL_MOP_LOGS = os.environ.get('FLASK_URL_MOP_LOGS')
+        self.FLASK_URL_GET_MOP_LOGS = os.environ.get('FLASK_URL_GET_MOP_LOGS')
+
+        self.IRONMAN_URL_GET_SCHEDULE = os.environ.get('IRONMAN_URL_GET_SCHEDULE')
+
+        self.IRONMAN_URL_MOP_UPDATE = os.environ.get('IRONMAN_URL_MOP_UPDATE')
+
+
+
+
+
