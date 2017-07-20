@@ -26,7 +26,7 @@ class FlaskManager(threading.Thread):
                 stringhelpers.print_bold("Archieving info FLASK number: %d" % self.counter)
 
 
-                #-------------- FLASK RUN MOP ----------------------------------------------------------------
+                #-------------- FLASK RUN MOP --------------------------------------------------------------------------
                 _request.url = self.requestURL.FLASK_URL_MOP
                 #_list_templates = _request.get().json()
                 _list_mops = _request.get().json()
@@ -39,16 +39,14 @@ class FlaskManager(threading.Thread):
                         else:
                             _request.url = self.requestURL.MEGA_URL_TEMPLATE_DETAIL % (x['template_id'])
                             _template = _request.get().json()
-
-
-                            #-------------------- run device from mop -------------------------------------------
+                            #-------------------- run device from mop --------------------------------------------------
                             array_device_mop = x['devices']
                             run_devices = {}
                             for item in array_device_mop:
                                 run_devices[str(item)] = "MOP"
 
                             _template['run_devices'] = run_devices
-                            #------------------------------------------------------------------------------------
+                            #-------------------------------------------------------------------------------------------
                             try:
                                 _template['run_args'] = x['run_args']
                                 _template['rollback_args'] = x['rollback_args']
@@ -62,7 +60,7 @@ class FlaskManager(threading.Thread):
                             flask_template.start()
 
 
-                # ---------------------------------------------------------------------------------------------------------
+                # ------------------------------------------------------------------------------------------------------
                 time.sleep(30)
 
 
