@@ -79,9 +79,14 @@ class Schedule(threading.Thread):
                         else:
                             while True:
                                 if irondiscovery.done == True:
+                                    #stringhelpers.info('[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (
+                                    #int(self.mop_data['return_after']), self.name))
+
                                     stringhelpers.info('[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (
-                                    int(self.mop_data['return_after']), self.name))
-                                    time.sleep(int(self.mop_data['return_after']) * 60)
+                                    int(5), self.name))
+
+                                    #time.sleep(int(self.mop_data['return_after']) * 60)
+                                    time.sleep(5 * 60)
                                     break
 
                 except Exception as _exError:
