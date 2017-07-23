@@ -45,7 +45,7 @@ class IronManager(threading.Thread):
                 # get current day name
                 #weekday = datetime.now().strftime('%A')
                 #_request.url = self.requestURL.IRONMAN_URL_GET_SCHEDULE % (weekday)
-                _request.url = self.requestURL.IRONMAN_URL_GET_SCHEDULE
+                _request.url = self.requestURL.IRONMAN_URL_GET_MOP_RUN_IRON
                 _list_schedules = _request.get().json()
                 if len(_list_schedules) > 0:
                     for x in _list_schedules:
@@ -60,11 +60,17 @@ class IronManager(threading.Thread):
                             pass
                         else:
                             list_time.append(run_time)
-                            _request.url = self.requestURL.MEGA_URL_TEMPLATE_DETAIL % (str(template_id))
-                            _template = _request.get().json()
+
+                            #_request.url = self.requestURL.MEGA_URL_TEMPLATE_DETAIL % (str(template_id))
+                            #_sub_mops = _request.get().json()
+
+                            _sub_mops = x.get('sub_mops', None)
+
                             dict_schedule[key_mop] = key_mop
-                            schedule = Schedule("SCHEDULE-%d" % (schedule_id), x, _template,  dict_schedule, False,
+
+                            schedule = Schedule("SCHEDULE-%d" % (schedule_id), x, _sub_mops,  dict_schedule, False,
                                                 mechanism, schedule_id, queue_discovery, x['output_mapping'])
+
                             schedule.start()
                             time.sleep(2)
 

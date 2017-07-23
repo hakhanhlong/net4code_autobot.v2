@@ -43,13 +43,14 @@ class Schedule(threading.Thread):
             while not self.is_stop:
                 # -------------------- run device from mop -------------------------------------------
                 array_device_mop = self.mop_data['devices']
-                run_devices = {}
+
+                '''run_devices = {}
                 for item in array_device_mop:
                     self._request.url = self.requestURL.URL_GET_DEVICE_DETAIL % (int(item)) # get device detail
                     device = self._request.get().json()
                     run_devices[str(item)] = device['role']
 
-                self.template_data['run_devices'] = run_devices
+                self.template_data['run_devices'] = run_devices'''
 
                 key_mop = 'main_schedule_%d' % (self.mop_data['mop_id'])
 
@@ -59,7 +60,7 @@ class Schedule(threading.Thread):
                     tableImpl = TABLEImpl()
                     table_name = tableImpl.get(table_id)['table_name']
 
-                    irondiscovery = IronDiscovery("IRONMAN-Thread-Template-%s" % (self.template_data['template_id']),
+                    irondiscovery = IronDiscovery("IRONMAN-Thread-Template-%s" % (self.mop_data['mop_id']),
                                                   self.template_data, {}, self.mop_data['mop_id'], table_name, self.output_mapping)
                     # insert to queue discovery
                     self.queue.put(irondiscovery)

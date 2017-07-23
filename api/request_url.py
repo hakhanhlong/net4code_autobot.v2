@@ -38,7 +38,7 @@ class RequestURL:
         self.FLASK_URL_MOP_LOGS = os.environ.get('FLASK_URL_MOP_LOGS')
         self.FLASK_URL_GET_MOP_LOGS = os.environ.get('FLASK_URL_GET_MOP_LOGS')
 
-        self.IRONMAN_URL_GET_SCHEDULE = os.environ.get('IRONMAN_URL_GET_SCHEDULE')
+        self.IRONMAN_URL_GET_MOP_RUN_IRON = os.environ.get('IRONMAN_URL_GET_MOP_RUN_IRON')
 
         self.IRONMAN_URL_MOP_UPDATE = os.environ.get('IRONMAN_URL_MOP_UPDATE')
 
