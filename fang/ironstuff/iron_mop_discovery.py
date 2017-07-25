@@ -661,6 +661,11 @@ class Action(threading.Thread):
             else:
                 return  None
 
+
+
+            if result_fang is None or result_fang is '':
+                return None
+
             array_row_data = stringhelpers.text_to_arrayrow(result_fang)
             array_row_data = stringhelpers.remove_duplicates(array_row_data)
             #string_contain_header = self.data_command['output'][step].get('header', None) # default item 0 in array
@@ -763,7 +768,7 @@ class Action(threading.Thread):
 
                                 output_result['rows'].append(rows_dict)
 
-                        if(string_contain_header in row):
+                        if string_contain_header in row:
 
                             # build header and extract size header for value
                             for config_output in self.data_command['output']:
