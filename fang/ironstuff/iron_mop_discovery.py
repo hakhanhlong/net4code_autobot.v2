@@ -656,10 +656,12 @@ class Action(threading.Thread):
             start_by = self.data_command['output'][step].get('start_by', None)
             end_by = self.data_command['output'][step].get('end_by', None)
 
-            if (start_by is not None and end_by is not None) and (start_by is not '' and end_by is not ''):
-                result_fang = stringhelpers.string_between(result_fang, start_by, end_by)
-            else:
-                return  None
+            #if (start_by is not None and end_by is not None) and (start_by is not '' and end_by is not ''):
+            #    result_fang = stringhelpers.string_between(result_fang, start_by, end_by)
+            #else:
+            #    return  None
+
+            result_fang = stringhelpers.string_between(result_fang, start_by, end_by)
 
 
 
