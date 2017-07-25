@@ -451,7 +451,6 @@ class SubTemplate(threading.Thread):
         _array_step = _array_step[::-1]
         # --------------------------------------------------------------------------------------------------------------
         if len(_array_step) > 0:# and self.is_rollback == False:
-            compare_final_output = []
             previous_final_output = []
             for step  in _array_step:
                 # print(_dict_list_actions[step])
