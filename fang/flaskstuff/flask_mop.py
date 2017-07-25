@@ -659,7 +659,7 @@ class Action(threading.Thread):
                     _array_step_rollback.append(str(count))  # save step command rollback
             else:
                 pass
-                # ------------------------------------------------------------------------------------------------------
+            # ----------------------------------------------------------------------------------------------------------
 
             '''#############################process command by dependency############################################'''
             if len(_array_step) > 0 and self.is_rollback == False:

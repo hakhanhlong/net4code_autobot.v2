@@ -229,7 +229,8 @@ class SubTemplate(threading.Thread):
                                 thread_action = Action(thread_action_name, action_data, action_id, None,
                                                        None, vendor_ios,
                                                        fac, self.is_rollback,
-                                                       log_output_file_name, deviceid=device['device_id'], table_name = self.table_name, data_fields=data_fields)
+                                                       log_output_file_name, deviceid=device['device_id'],
+                                                       table_name = self.table_name, data_fields=data_fields)
 
                                 thread_action.start()
                                 result = thread_action.join()
@@ -438,22 +439,16 @@ class Action(threading.Thread):
     def run(self):
         try:
             key_list_command = self.vendor_os
-            key_rollback = 'rollback'
-
             self.action_log['result']['outputs'][key_list_command] = {}
             self.action_log['result']['outputs'][key_list_command]['config'] = []
             self.action_log['result']['outputs'][key_list_command]['rollback'] = []
 
-            action_type = self.data_action['category_1']
-            _list_action_commands = self.data_action['commands'][key_list_command]['config']  # list action_command config
-            _list_action_rollback = self.data_action['commands'][key_list_command]['rollback']  # list action_command rollback
-
-
-
+            action_type = self.data_action.get('category_1', None)  # thieeu category_1 tra ra tu json
+            _list_action_commands = self.data_action['commands']['config']  # list action_command config
+            _list_action_rollback = self.data_action['commands']['rollback']  # list action_command rollback
 
             # --------------- list dict action command -----------------------------------------------------------------
             _dict_list_command = dict()
-            _dict_list_params = self.params_action
             _array_step = []
             if len(_list_action_commands) > 0:
                 count = 0
@@ -466,7 +461,6 @@ class Action(threading.Thread):
             # ----------------------------------------------------------------------------------------------------------
             # --------------- list dict action command rollback---------------------------------------------------------
             _dict_list_command_rollback = dict()
-            _dict_list_params_rollback = self.param_rollback_action
             _array_step_rollback = []
             if len(_list_action_rollback) > 0:
                 count = 0
@@ -476,7 +470,7 @@ class Action(threading.Thread):
                     _array_step_rollback.append(str(count))  # save step command rollback
             else:
                 pass
-                # ------------------------------------------------------------------------------------------------------
+                # ----------------------------------------------------------------------------------------------------------
 
             '''#############################process command by dependency############################################'''
             if len(_array_step) > 0 and self.is_rollback == False:
@@ -485,19 +479,19 @@ class Action(threading.Thread):
                 for step in _array_step:
                     _command_running = _dict_list_command[step]
                     # if _command_running['dependency'] == '0':
-                    command_id = _command_running.get('command_id', 0)
+                    command_id = int(_command_running.get('command_id', 0))
                     if command_id > 0:  # command_id > 0
                         dependency = int(_command_running['dependency'])
                         if dependency > 0:  # run need compare
                             dependStep = dependency
                             if (int(_command_running['condition']) == int(previous_final_output[dependStep - 1])):
-                                command_type = _command_running.get('type', None)
+                                command_type = int(_command_running.get('type', None))
                                 if command_type is not None:
-                                    if command_type == '5':  # process delay command
-                                        output_info = self.process_each_command(command_id, _dict_list_params, step)
+                                    if command_type == 5:  # process delay command
+                                        output_info = self.process_each_command(command_id, _command_running, step)
                                         previous_final_output.append(True)
                                     else:
-                                        output_info = self.process_each_command(command_id, _dict_list_params, step)
+                                        output_info = self.process_each_command(command_id, _command_running, step)
                                         if output_info is not None:
                                             previous_final_output.append(output_info[str(command_id)]['final_output'])
                                             self.action_log['result']['outputs'][key_list_command]['config'].append(
@@ -515,13 +509,13 @@ class Action(threading.Thread):
                                 previous_final_output.append(False)
                                 continue
                         else:  # dependency == 0
-                            command_type = _command_running.get('type', None)
+                            command_type = int(_command_running.get('type', None))
                             if command_type is not None:
-                                if command_type == '5':  # process delay command
-                                    output_info = self.process_each_command(command_id, _dict_list_params, step)
+                                if command_type == 5:  # process delay command
+                                    output_info = self.process_each_command(command_id, _command_running, step)
                                     previous_final_output.append(True)
                                 else:
-                                    output_info = self.process_each_command(command_id, _dict_list_params, step)
+                                    output_info = self.process_each_command(command_id, _command_running, step)
                                     if output_info is not None:
                                         previous_final_output.append(output_info[str(command_id)]['final_output'])
                                         self.action_log['result']['outputs'][key_list_command]['config'].append(
@@ -598,11 +592,10 @@ class Action(threading.Thread):
             stringhelpers.err("MEGA ACTIONS CONNECT API URL ERROR %s | THREAD %s" % (self._request.url, self.name))
 
 
-    def process_each_command(self, command_id = 0, _dict_list_params = [], step=''):
+    def process_each_command(self, command_id = 0, _command_list = None, step=''):
         '''process command contains params'''
         try:
-            self._request.url = self.requestURL.MEGA_URL_COMMAND_DETAIL % (command_id)
-            self.data_command = self._request.get().json()
+            self.data_command = _command_list
             command = None
 
 
@@ -618,30 +611,15 @@ class Action(threading.Thread):
 
 
             ################### process args for command ##############################################
-            #self.thread_lock.acquire()
-            if len(_dict_list_params) > 0:
-                for item in _dict_list_params: #array contain dict param argument
-                    for k, v in item.items():
-                        if command is None:
-                            command = self.data_command['command']
-                            command = command.replace('@{%s}' % (k), v)
-                        else:
-                            command = command.replace('@{%s}' % (k), v)
-
-            else:
-                command = self.data_command['command']
-            #self.thread_lock.release()
+            command = self.data_command['command']
             ###########################################################################################
 
             if command is not None:
                 commands = [command]
                 #stringhelpers.info_green(command)
-
                 self.fang.execute_template_action_command(commands, blanks=2, error_reporting=True, timeout=-1, terminal=False)
                 #result_fang = self.fang.get_output()
                 result_fang = self.fang.get_action_output(self.log_output_file_name)
-
-
                 # processing parsing command follow output ###########################################
                 action_command_log = self.parsing(command_id ,result_fang, commands[0], step)
                 action_command_log = None
@@ -670,14 +648,10 @@ class Action(threading.Thread):
         array_header_map  = {}
         try:
 
-
-            if command_id == 11019 or command_id == 11020 or command_id == 11025:
-                longhk = "test"
-
             if self.data_fields is None:
                 return None
 
-            step = 0#int(step) - 1
+            step = 0
 
             start_by = self.data_command['output'][step].get('start_by', None)
             end_by = self.data_command['output'][step].get('end_by', None)

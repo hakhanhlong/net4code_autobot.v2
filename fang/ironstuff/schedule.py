@@ -40,23 +40,11 @@ class Schedule(threading.Thread):
 
                 if time_current >= time_start:
                     self.is_waiting = False
-            #---------------------------------------------------------------------------------------------------------
-
+            #-----------------------------------------------------------------------------------------------------------
+            arr_manager_discovery = []
             while not self.is_stop:
-                # -------------------- run device from mop -------------------------------------------
-                array_device_mop = self.mop_data['devices']
-
-                '''run_devices = {}
-                for item in array_device_mop:
-                    self._request.url = self.requestURL.URL_GET_DEVICE_DETAIL % (int(item)) # get device detail
-                    device = self._request.get().json()
-                    run_devices[str(item)] = device['role']
-
-                self.template_data['run_devices'] = run_devices'''
-
-                key_mop = 'main_schedule_%d' % (self.mop_data['mop_id'])
-
-
+                # -------------------- run device from mop -------------------------------------------------------------
+                key_mop = 'main_schedule_%d' % (int(self.mop_data['mop_id']))
                 try:
                     table_id = int(self.mop_data['save_to_table'])
                     tableImpl = TABLEImpl()
@@ -67,8 +55,8 @@ class Schedule(threading.Thread):
                                                       sub_mop_item, {}, self.mop_id, table_name, self.output_mapping)
                         # insert to queue discovery
                         self.queue.put(irondiscovery)
-                    # irondiscovery.start()
-                    # irondiscovery.join()
+                        arr_manager_discovery.append(irondiscovery)
+
 
                     if self.mechanism.upper() == 'MANUAL':
                         self.is_stop = True
@@ -80,8 +68,12 @@ class Schedule(threading.Thread):
                             self.is_stop = True
                         else:
                             while True:
-                                if irondiscovery.done == True:
-                                    stringhelpers.info('[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
+                                count = 0
+                                for discovery_item in arr_manager_discovery:
+                                    if discovery_item.done == True:
+                                        count = count + 1
+                                if count == len(arr_manager_discovery):
+                                    stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
                                     time.sleep(int(self.mop_data['return_after']) * 60)
                                     break
                 except Exception as _exError:
