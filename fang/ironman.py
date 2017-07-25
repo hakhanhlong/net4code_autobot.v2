@@ -50,7 +50,7 @@ class IronManager(threading.Thread):
                 if len(_list_schedules) > 0:
                     for x in _list_schedules:
                         key_mop = 'main_schedule_%d' % (x['mop_id'])
-                        schedule_id = x['mop_id']
+                        mop_id = int(x['mop_id'])
                         template_id = int(x['template_id'])
                         mechanism = x['run_type']
                         run_time = x['run_datetime'].split("-")[1].strip()
@@ -68,8 +68,8 @@ class IronManager(threading.Thread):
 
                             dict_schedule[key_mop] = key_mop
 
-                            schedule = Schedule("SCHEDULE-%d" % (schedule_id), x, _sub_mops,  dict_schedule, False,
-                                                mechanism, schedule_id, queue_discovery, x['output_mapping'])
+                            schedule = Schedule("SCHEDULE-%d" % (mop_id), x, _sub_mops,  dict_schedule, False,
+                                                mechanism, mop_id, queue_discovery, x['output_mapping'])
 
                             schedule.start()
                             time.sleep(2)

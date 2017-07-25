@@ -3,6 +3,8 @@ from ultils import stringhelpers
 from api.request_helpers import RequestHelpers
 from api.request_url import RequestURL
 from fang.ironstuff.irondiscovery import IronDiscovery
+from fang.ironstuff.iron_mop_discovery import Iron_Mop_Discovery
+
 import time
 from datetime import datetime
 
@@ -11,19 +13,19 @@ from database.impl.table_impl import TABLEImpl
 
 class Schedule(threading.Thread):
     ''' Schedule threading'''
-    def __init__(self, name=None, mop_data=None, template_data=None, dict_schedule=None, is_stop=None,
-                 mechanism=None, schedule_id = 0, queue=None, output_mapping=None):
+    def __init__(self, name=None, mop_data=None, sub_mops=None, dict_schedule=None, is_stop=None,
+                 mechanism=None, mop_id = 0, queue=None, output_mapping=None):
         threading.Thread.__init__(self)
         self.name = name
         self.mop_data = mop_data
-        self.template_data = template_data
+        self.sub_mops = sub_mops
         self.dict_schedule = dict_schedule
         self.is_stop = is_stop
         self.mechanism = mechanism
         self.requestURL = RequestURL()
         self._request = RequestHelpers()
         self.is_waiting = True
-        self.schedule_id = schedule_id
+        self.mop_id = mop_id
         self.queue = queue
         self.output_mapping = output_mapping
 
@@ -60,11 +62,11 @@ class Schedule(threading.Thread):
                     tableImpl = TABLEImpl()
                     table_name = tableImpl.get(table_id)['table_name']
 
-                    irondiscovery = IronDiscovery("IRONMAN-Thread-Template-%s" % (self.mop_data['mop_id']),
-                                                  self.template_data, {}, self.mop_data['mop_id'], table_name, self.output_mapping)
-                    # insert to queue discovery
-                    self.queue.put(irondiscovery)
-
+                    for sub_mop_item in self.sub_mops:
+                        irondiscovery = Iron_Mop_Discovery("IRONMAN-Thread-Template-%s" % (str(self.mop_id)),
+                                                      sub_mop_item, {}, self.mop_id, table_name, self.output_mapping)
+                        # insert to queue discovery
+                        self.queue.put(irondiscovery)
                     # irondiscovery.start()
                     # irondiscovery.join()
 
@@ -79,16 +81,9 @@ class Schedule(threading.Thread):
                         else:
                             while True:
                                 if irondiscovery.done == True:
-                                    #stringhelpers.info('[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (
-                                    #int(self.mop_data['return_after']), self.name))
-
-                                    stringhelpers.info('[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (
-                                    int(5), self.name))
-
-                                    #time.sleep(int(self.mop_data['return_after']) * 60)
-                                    time.sleep(5 * 60)
+                                    stringhelpers.info('[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
+                                    time.sleep(int(self.mop_data['return_after']) * 60)
                                     break
-
                 except Exception as _exError:
                     stringhelpers.err("[ERROR] %s" % (_exError))
 

@@ -128,7 +128,7 @@ class FlaskSubMop(threading.Thread):
                     info_fang['actions'] = dict_action
                     subtemplate['devices'].append(info_fang)
                 except Exception as _error:
-                    stringhelpers.err("FLASK TEMPLATE BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error))
+                    stringhelpers.err("FLASK MOP BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error))
             if subtemplate is not None:
                 data_fang['subtemplates'].append(subtemplate)
         except:

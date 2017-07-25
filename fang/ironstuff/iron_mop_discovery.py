@@ -17,7 +17,7 @@ from time import time, sleep
 
 
 #@functools.total_ordering
-class IronDiscovery(threading.Thread):
+class Iron_Mop_Discovery(threading.Thread):
     """ Thread instance each process template """
     def __init__(self,  name, sub_mop = None, dict_template = {}, mop_id = None, table_name=None, output_mapping=None):
         threading.Thread.__init__(self)
@@ -77,86 +77,57 @@ class IronDiscovery(threading.Thread):
     def buildinfo_subtemplates(self):
         data_fang = dict(subtemplates=[])
         # ----------------device list------------------------------------------------------------------------------------
-        run_devices = sorted(self.data_template['run_devices'].items(), reverse=False)
-        key_maps = sorted(self.data_template['map'].keys()) #key number sub template
-        run_mode = self.data_template["run_mode"]
+        run_devices = sorted(self.sub_mop['devices'].items(), reverse=False)
+        run_mode = self.sub_mop["run_mode"]
 
-        for _k in key_maps:  # _k = number template, _v = dict role apply for sub template, sub template
-            sub_template_number = _k
+        try:
+
             subtemplate = dict(devices=[])
-            dict_map_template = self.data_template['map'][sub_template_number]
-            subtemplate_data = self.data_template['sub_templates'][int(sub_template_number)] #data are list action
-
             for k, v in run_devices:  # get list device id need fang and role of each device
-                # k = deviceid, v = role of device
-                device_role_name = v
-                role_exist =  dict_map_template.get(device_role_name, None)
+                # k = deviceid
                 count_step = 0
-                if role_exist: # compare role of device == role of template
+                info_fang = {}  # clear each add info
+                subtemplate['sub_template_name'] = self.sub_mop['name']
 
-                    info_fang = {} #clear each add info
-                    subtemplate['sub_template_name'] = self.data_template['nameMap'][sub_template_number]
+                # ------------ get data chay mode parallel ---------------------------------------------------------
+                try:
+                    mode = int(run_mode)
+                    if mode == 1:
+                        subtemplate['mode'] = 1  # not run parallel
+                    elif mode == 2:
+                        subtemplate['mode'] = 2  # run parallel
+                except:
+                    pass
+                # --------------------------------------------------------------------------------------------------
 
-                    # ------------ get data chay mode parallel ---------------------------------------------------------
-                    try:
-                        mode = int(run_mode.get(sub_template_number, 0))
-                        if mode == 1:
-                            subtemplate['mode'] = 1 # not run parallel
-                        elif mode == 2:
-                            subtemplate['mode'] = 2 # run parallel
-                    except:
-                        pass
-                    # --------------------------------------------------------------------------------------------------
+                try:
+                    device_fang = dict(device_id=k) #k = device_id
+                    device_id = device_fang['device_id']
 
-                    try:
-                        device_fang = dict(device_id=k, role=device_role_name)
-                        device_id = device_fang['device_id']
-
-                        self._request.url = self.requestURL.URL_GET_DEVICE_DETAIL % (device_id)
-
-                        print(self._request.url, end='\n\n')
-
-                        device = self._request.get().json()
-
-
-
-
-                        device_fang['device_info'] = dict(
-                            port_mgmt=device['port_mgmt'],
-                            method=device['method'],
-                            vendor=device['vendor'],
-                            os=device['os'],
-                            username=device['username'],
-                            password=device['password'],
-                            ip_mgmt=device['ip_mgmt'],
-                            device_id=device['device_id']
-                        )
-                        device_fang['vendor_ios'] = "%s|%s" % (device['vendor'], device['os'])  # vendor+os = e.x: Cisco|ios-xr
-                        info_fang['device'] = device_fang
-
-                        dict_action = dict(args=[], rollback_args=[])
-                        #-----------------action in each template ----------------------------------------------------------
-                        for action in subtemplate_data:  # list actions
-                            count_step = count_step + 1  # step
-                            dict_action[str(count_step)] = action
-                            # process argument for action ------------------------------------------------------------------
-                            try:
-                                dict_argument = self.data_template['run_args'].get(sub_template_number, None)  # level get by number template
-                                if dict_argument is not None:
-                                    dict_argument = dict_argument.get(device_id, None)  # level get by deviceid
-                                    if dict_argument is not None:
-                                        dict_action['args'].append(dict_argument)
-                            except:
-                                pass
-                            # -------------------------------------------------------------------------------------------
-                            #ll_actions.append(dict_action)  # can xem lai co nen dung double linked list ko
-                        info_fang['actions'] = dict_action
-                        subtemplate['devices'].append(info_fang)
-                    except Exception as _error:
-                        stringhelpers.err("MEGA TEMPLATE BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error))
+                    device_fang['device_info'] = dict(
+                        port_mgmt=v['port'],
+                        method=v['method'],
+                        vendor=v['vendor'],
+                        os=v['os'],
+                        username=v['username'],
+                        password=v['password'],
+                        ip_mgmt=v['ip'],
+                        device_id=int(v['device_id'])
+                    )
+                    device_fang['vendor_ios'] = "%s|%s" % (v['vendor'], v['os'])  # vendor+os = e.x: Cisco|ios-xr
+                    info_fang['device'] = device_fang
+                    dict_action = dict()
+                    for action in v['actions']:  # list actions
+                        count_step = count_step + 1  # step
+                        dict_action[str(count_step)] = action
+                    info_fang['actions'] = dict_action
+                    subtemplate['devices'].append(info_fang)
+                except Exception as _error:
+                    stringhelpers.err("IRON MOP DISCOVERY BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error))
             if subtemplate is not None:
                 data_fang['subtemplates'].append(subtemplate)
-
+        except:
+            pass
 
         return data_fang
 
@@ -214,20 +185,11 @@ class SubTemplate(threading.Thread):
 
         # --------------- list dict action command ---------------------------------------------------------------------
         _dict_list_actions = dict()
-        # _dict_list_action params = self.data_action['test_args']
         _array_step = []
-        param_action = None
-        param_rollback_action = None
         if len(actions) > 0:
             for step, action in actions:
-                if str(step) != 'args' and (step) != 'rollback_args':
-                    _dict_list_actions[str(step)] = action
-                    _array_step.append(str(step))  # save step action
-                else:
-                    if str(step) == 'args': #array contain dict argument
-                        param_action = action
-                    else:
-                        pass
+                _dict_list_actions[str(step)] = action
+                _array_step.append(str(step))  # save step action
         else:
             pass
         # --------------------------------------------------------------------------------------------------------------
@@ -238,10 +200,7 @@ class SubTemplate(threading.Thread):
             for step  in _array_step:
                 # print(_dict_list_actions[step])
                 _action = _dict_list_actions[str(step)]
-                action_id = _action.get('action_id', 0)
-
-
-
+                action_id = int(_action.get('action_id', 0))
 
                 if action_id > 0:  # command_id > 0
                     try:
@@ -256,10 +215,10 @@ class SubTemplate(threading.Thread):
 
                         return None
 
-                    self._request.url = self.requestURL.MEGA_URL_ACTION_DETAIL % (action_id)
+
                     try:
                         thread_action_name = "Thread-Action_%s-In-%s" % (action_id, self.name)
-                        action_data = self._request.get().json()
+                        action_data = _action
                         dependency = int(_action['dependency'])
                         if dependency > 0:  # run need compare
                             dependStep = dependency
@@ -267,8 +226,8 @@ class SubTemplate(threading.Thread):
 
 
 
-                                thread_action = Action(thread_action_name, action_data, action_id, param_action,
-                                                       param_rollback_action, vendor_ios,
+                                thread_action = Action(thread_action_name, action_data, action_id, None,
+                                                       None, vendor_ios,
                                                        fac, self.is_rollback,
                                                        log_output_file_name, deviceid=device['device_id'], table_name = self.table_name, data_fields=data_fields)
 
@@ -286,8 +245,8 @@ class SubTemplate(threading.Thread):
                                 previous_final_output.append(False)
                                 continue
                         else:  # dependency == 0
-                            thread_action = Action(thread_action_name, action_data, action_id, param_action,
-                                                   param_rollback_action, vendor_ios,
+                            thread_action = Action(thread_action_name, action_data, action_id, None,
+                                                   None, vendor_ios,
                                                    fac, self.is_rollback, log_output_file_name,
                                                    deviceid=device['device_id'], table_name =self.table_name, data_fields = data_fields)
                             thread_action.start()
