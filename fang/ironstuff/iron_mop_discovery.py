@@ -657,25 +657,25 @@ class Action(threading.Thread):
             end_by = self.data_command['output'][step].get('end_by', None)
 
             #if (start_by is not None and end_by is not None) and (start_by is not '' and end_by is not ''):
+            #    result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
+            #elif (start_by is not None and end_by is None) and (start_by is not '' and end_by is ''):
             #    result_fang = stringhelpers.string_between(result_fang, start_by, end_by)
             #else:
-            #    return  None
 
-            result_fang = stringhelpers.string_between(result_fang, start_by, end_by)
+            result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
+
+
 
 
 
             if result_fang is None or result_fang is '':
                 return None
 
+
             array_row_data = stringhelpers.text_to_arrayrow(result_fang)
             array_row_data = stringhelpers.remove_duplicates(array_row_data)
-            #string_contain_header = self.data_command['output'][step].get('header', None) # default item 0 in array
             string_contain_header = self.data_command['output'][step].get('template_header', None)  # default item 0 in array
-            #string_table_name = self.data_command['output'][step].get('db_table', None).lower() # table name
             string_table_name = self.table_name
-
-
 
 
             if string_contain_header is not None:
