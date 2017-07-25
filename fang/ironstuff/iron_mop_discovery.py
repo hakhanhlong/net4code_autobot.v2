@@ -707,7 +707,10 @@ class Action(threading.Thread):
 
 
                                     #field = array_header_map.get(key, None)
-                                    field = self.data_fields[str(command_id)][config_output['name']]
+                                    field = self.data_fields[str(command_id)].get(config_output['name'], None)
+                                    if field is None:
+                                        key_field = config_output['name'].lower()
+                                        field = self.data_fields[str(command_id)].get(key_field, None)
 
 
                                     #array_check_whitespace = [v for v in value if v.isspace()]
