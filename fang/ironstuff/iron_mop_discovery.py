@@ -657,15 +657,12 @@ class Action(threading.Thread):
             end_by = self.data_command['output'][step].get('end_by', None)
 
             #if (start_by is not None and end_by is not None) and (start_by is not '' and end_by is not ''):
-            #    result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
+            #    result_fang = stringhelpers.string_between(result_fang, start_by, end_by)
             #elif (start_by is not None and end_by is None) and (start_by is not '' and end_by is ''):
             #    result_fang = stringhelpers.string_between(result_fang, start_by, end_by)
             #else:
 
-            result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
-
-
-
+            result_fang = stringhelpers.find_between_r(result_fang, start_by, end_by)
 
 
             if result_fang is None or result_fang is '':
