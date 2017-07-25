@@ -710,7 +710,6 @@ class Action(threading.Thread):
                                     field = self.data_fields[str(command_id)][config_output['name']]
 
 
-
                                     #array_check_whitespace = [v for v in value if v.isspace()]
                                     if value is not '':
                                         data_build[field] = value
@@ -805,7 +804,9 @@ class Action(threading.Thread):
                             for d in array_delete_networkobject:
                                 netwImpl.delete(d)
                                 stringhelpers.err('[DELETE][NETWORK_OBJECT_ID] - %s' % (str(d)), '\n\n')
-                # dang xu ly
+            else:
+                stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
+            # dang xu ly
 
                 #-----------------------------------------------------------------------------------------------------------
 
