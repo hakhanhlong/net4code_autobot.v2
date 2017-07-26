@@ -11,9 +11,9 @@ from time import time, sleep
 
 class FlaskSubMop(threading.Thread):
     """ Thread instance each process template """
-    def __init__(self, name, sub_mop, mop_id=None):
+    def __init__(self, name, sub_mops, mop_id=None):
         threading.Thread.__init__(self)
-        self.sub_mop = sub_mop
+        self.sub_mops = sub_mops
         self.mop_id = mop_id
         self.info_fang = self.buildinfo_subtemplates()
         self._request = RequestHelpers()
@@ -81,58 +81,58 @@ class FlaskSubMop(threading.Thread):
 
     def buildinfo_subtemplates(self):
         data_fang = dict(subtemplates=[])
-        # ----------------device list------------------------------------------------------------------------------------
-        run_devices = sorted(self.sub_mop['devices'].items(), reverse=False)
-        run_mode = self.sub_mop["run_mode"]
 
-        try:
 
-            subtemplate = dict(devices=[])
-            for k, v in run_devices:  # get list device id need fang and role of each device
-                # k = deviceid
-                count_step = 0
-                info_fang = {}  # clear each add info
-                subtemplate['sub_template_name'] = self.sub_mop['name']
+        for sub_mop in self.sub_mops:
+            run_devices = sorted(sub_mop['devices'].items(), reverse=False)
+            run_mode = sub_mop["run_mode"]
 
-                # ------------ get data chay mode parallel ---------------------------------------------------------
-                try:
-                    mode = int(run_mode)
-                    if mode == 1:
-                        subtemplate['mode'] = 1  # not run parallel
-                    elif mode == 2:
-                        subtemplate['mode'] = 2  # run parallel
-                except:
-                    pass
-                # --------------------------------------------------------------------------------------------------
+            try:
 
-                try:
-                    device_fang = dict(device_id=k) #k = device_id
-                    device_id = device_fang['device_id']
+                subtemplate = dict(devices=[])
+                for k, v in run_devices:  # get list device id need fang and role of each device
+                    # k = deviceid
+                    count_step = 0
+                    info_fang = {}  # clear each add info
+                    subtemplate['sub_template_name'] = sub_mop['name']
 
-                    device_fang['device_info'] = dict(
-                        port_mgmt=v['port'],
-                        method=v['method'],
-                        vendor=v['vendor'],
-                        os=v['os'],
-                        username=v['username'],
-                        password=v['password'],
-                        ip_mgmt=v['ip'],
-                        device_id=int(v['device_id'])
-                    )
-                    device_fang['vendor_ios'] = "%s|%s" % (v['vendor'], v['os'])  # vendor+os = e.x: Cisco|ios-xr
-                    info_fang['device'] = device_fang
-                    dict_action = dict()
-                    for action in v['actions']:  # list actions
-                        count_step = count_step + 1  # step
-                        dict_action[str(count_step)] = action
-                    info_fang['actions'] = dict_action
-                    subtemplate['devices'].append(info_fang)
-                except Exception as _error:
-                    stringhelpers.err("FLASK MOP BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error))
-            if subtemplate is not None:
-                data_fang['subtemplates'].append(subtemplate)
-        except:
-            pass
+                    # ------------ get data chay mode parallel ---------------------------------------------------------
+                    try:
+                        mode = int(run_mode)
+                        if mode == 1:
+                            subtemplate['mode'] = 1  # not run parallel
+                        elif mode == 2:
+                            subtemplate['mode'] = 2  # run parallel
+                    except:
+                        pass
+                    # --------------------------------------------------------------------------------------------------
+
+                    try:
+                        device_fang = dict(device_id=k) #k = device_id
+                        device_fang['device_info'] = dict(
+                            port_mgmt=v['port'],
+                            method=v['method'],
+                            vendor=v['vendor'],
+                            os=v['os'],
+                            username=v['username'],
+                            password=v['password'],
+                            ip_mgmt=v['ip'],
+                            device_id=int(v['device_id'])
+                        )
+                        device_fang['vendor_ios'] = "%s|%s" % (v['vendor'], v['os'])  # vendor+os = e.x: Cisco|ios-xr
+                        info_fang['device'] = device_fang
+                        dict_action = dict()
+                        for action in v['actions']:  # list actions
+                            count_step = count_step + 1  # step
+                            dict_action[str(count_step)] = action
+                        info_fang['actions'] = dict_action
+                        subtemplate['devices'].append(info_fang)
+                    except Exception as _error:
+                        stringhelpers.err("FLASK MOP BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error))
+                if subtemplate is not None:
+                    data_fang['subtemplates'].append(subtemplate)
+            except:
+                pass
 
         return data_fang
 
@@ -142,7 +142,6 @@ class FlaskSubMop(threading.Thread):
 
         if len(self.result_templates) > 0:
             reversed_result = self.result_templates[::-1]
-            #reversed_result = self.result_templates
             sub_template_number = len(reversed_result) - 1
             for item in reversed_result:
                 dict_template_rollback = dict(devices=[])
@@ -459,7 +458,7 @@ class SubTemplate(threading.Thread):
                 if action_id > 0:  # command_id > 0
 
                     try:
-                        thread_action_name = "[ROLLBACK] Thread-Action_%s-In-%s" % (action_id, self.name)
+                        thread_action_name = "[ROLLBACK] Thread-Action_%d-In-%s" % (action_id, self.name)
                         action_data = _action
 
                         thread_action = Action(thread_action_name, action_data, action_id, None,
@@ -476,7 +475,7 @@ class SubTemplate(threading.Thread):
                         self.update_log(result, True, device['device_id'], action_id)
 
                     except:
-                        stringhelpers.warn("[ROLLBACK][%s] FLASK TEMPLATE REQUEST DATA ACTION %s FAIL\r\n" % (self.name, action_id))
+                        stringhelpers.warn("[ROLLBACK][%s] FLASK TEMPLATE REQUEST DATA ACTION %d FAIL\r\n" % (self.name, action_id))
                 else:  # last command in actions check point
                     pass
 
@@ -805,7 +804,7 @@ class Action(threading.Thread):
 
                     _command_running = _dict_list_command_rollback[step]
                     # if _command_running['dependency'] == '0':
-                    command_id = _command_running.get('command_id', 0)
+                    command_id = int(_command_running.get('command_id', 0))
                     if command_id > 0:  # command_id > 0
                         dependency = int(_command_running['dependency'])
                         if dependency > 0:  # run need compare

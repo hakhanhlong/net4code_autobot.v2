@@ -32,7 +32,7 @@ class FlaskManager(threading.Thread):
             dict_update['duration_time'] = '%.2f' % (duration - start_time)
 
         self._request.params = dict_update
-        #self._request.put()
+        self._request.put()
 
 
     def run(self):
@@ -60,13 +60,13 @@ class FlaskManager(threading.Thread):
                             status = 'running'
                             self.update_mop_status(status, mop_id)
                             start_time = time()
-                            for item_mop in sub_mops:
-                                flask_sub_mop = FlaskSubMop("FLASK-Thread-MOP-%d" % (mop_id), item_mop, mop_id)
-                                flask_sub_mop.start()
-                                status = flask_sub_mop.join()
+                            #for item_mop in sub_mops:
+                            flask_sub_mop = FlaskSubMop("FLASK-Thread-MOP-%d" % (mop_id), sub_mops, mop_id)
+                            flask_sub_mop.start()
+                            status = flask_sub_mop.join()
 
                             self.update_mop_status(status, mop_id, start_time, time())
-                            #del dict_template[key_mop]
+                            del dict_template[key_mop]
 
 
                 # ---------------------------------------------------------------------------------------------------------
