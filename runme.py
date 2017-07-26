@@ -17,6 +17,7 @@ def main():
     #connect(host="mongodb://27.78.16.56:8040/ironmanV2")
 
     stringhelpers.print_welcome()
+
     '''_mega_manager = MegaManager('MEGA-MANAGEMENT', False)
     _mega_manager.start()'''
 
@@ -25,11 +26,6 @@ def main():
 
     _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False)
     _ironman_manager.start()
-
-
-
-    #resource.setrlimit(resource.RLIMIT_NOFILE, (50, resource.RLIM_INFINITY))
-
 
 
 if __name__ == '__main__':
