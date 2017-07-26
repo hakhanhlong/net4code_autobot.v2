@@ -891,7 +891,6 @@ class Action(threading.Thread):
 
                             self.action_log['final_output'] = first_value
                             self.final_result = first_value
-                            #self.dict_state_result['final_result_action_rollback'] = self.final_result
                             self.dict_state_result['final_result_action'] = self.final_result
                         else:
                             #pass

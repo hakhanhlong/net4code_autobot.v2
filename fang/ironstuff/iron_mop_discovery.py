@@ -810,7 +810,7 @@ class Action(threading.Thread):
                         if len(array_delete_networkobject) > 0:
                             for d in array_delete_networkobject:
                                 netwImpl.delete(d)
-                                stringhelpers.err('[DELETE][NETWORK_OBJECT_ID] - %s' % (str(d)), '\n\n')
+                                stringhelpers.err('[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (str(d), str(self.deviceid), str(command_id)), '\n\n')
             else:
                 stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
             # dang xu ly
