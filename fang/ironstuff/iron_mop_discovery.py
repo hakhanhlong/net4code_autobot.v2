@@ -634,7 +634,7 @@ class Action(threading.Thread):
             stringhelpers.err("[DISCOVERY] MEGA ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name))
             return None
 
-
+    # parsing and insert/update database
     def parsing(self, command_id = 0, result_fang = None, commandtext=None, step=''):
         final_result_output = []
         output_result = dict(deviceid=self.deviceid)
