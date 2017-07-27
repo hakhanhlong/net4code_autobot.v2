@@ -40,7 +40,8 @@ class Iron_Mop_Discovery(threading.Thread):
     def update_mop_status(self, status, duration=None):
         # ---------------update mega_status to action------------------------------------------------
         self._request.url = self.requestURL.IRONMAN_URL_MOP_UPDATE % (self.mop_id)
-        dict_update = {'iron_status': status}
+        #dict_update = {'iron_status': status}
+        dict_update = {'flash_status': status}
         if status == 'running':
             dict_update['start_time'] = datetime.now().strftime("%Y-%m-%d %H:%M")
         if status == 'done' or status == 'rolledback':
@@ -50,7 +51,7 @@ class Iron_Mop_Discovery(threading.Thread):
             dict_update['duration_time'] = '%.2f' % (duration - self.start_time)
 
         self._request.params = dict_update
-        self._request.put()
+        #self._request.put()
 
     def run(self):
         if self.info_fang is not None:
@@ -58,8 +59,8 @@ class Iron_Mop_Discovery(threading.Thread):
             count = 0
             for fang in self.info_fang['subtemplates']: # fang sub template
                 sub_template_name = fang['sub_template_name']
-                out_mapping = self.output_mapping.get(str(count), None)
-                subtemplate_thread = SubTemplate(sub_template_name, fang, False, self.result_templates, int(fang['mode']), self.table_name, out_mapping)
+                #out_mapping = self.output_mapping.get(str(count), None)
+                subtemplate_thread = SubTemplate(sub_template_name, fang, False, self.result_templates, int(fang['mode']), self.table_name, self.output_mapping)
                 self.update_mop_status('running')
                 subtemplate_thread.start()
                 dict_template = dict(sub_template_name = sub_template_name, state = subtemplate_thread.join(), fang=fang, mode=int(fang['mode']))
@@ -656,12 +657,6 @@ class Action(threading.Thread):
             start_by = self.data_command['output'][step].get('start_by', None)
             end_by = self.data_command['output'][step].get('end_by', None)
 
-            #if (start_by is not None and end_by is not None) and (start_by is not '' and end_by is not ''):
-            #    result_fang = stringhelpers.string_between(result_fang, start_by, end_by)
-            #elif (start_by is not None and end_by is None) and (start_by is not '' and end_by is ''):
-            #    result_fang = stringhelpers.string_between(result_fang, start_by, end_by)
-            #else:
-
             result_fang = stringhelpers.find_between_r(result_fang, start_by, end_by)
 
 
@@ -726,6 +721,9 @@ class Action(threading.Thread):
                                     pass
 
 
+
+
+
                             data_version['modifieddate'] = datetime.now()
 
                             #---------------------------------------------------------------------------------------
@@ -750,16 +748,45 @@ class Action(threading.Thread):
                                     intf = netwImpl.get(self.deviceid, string_table_name, index_column, row_count, command_id)
 
                                     if intf: #exist interfaces then update
-                                        array_network_id.append(intf.networkobject_id)
                                         versions = intf['versions']
                                         if versions is not None:
                                             versions.append(data_version)
                                             data_build['versions'] = versions
+
+                                        #------------------- merge -----------------------------------------------------
+                                        interfaces_value_field = data_build.get('Interfaces', None)
+                                        if interfaces_value_field is not None:
+                                            network_merge = netwImpl.get_field(self.deviceid, string_table_name, 'Interfaces', interfaces_value_field)
+                                            if network_merge is not None:
+                                                stringhelpers.info_green("[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
+                                                for k, v in data_build.items():
+                                                    if k != 'Interfaces':
+                                                        network_merge[str(k)] = v
+                                                network_merge.modified = datetime.now()
+                                                network_merge.save()
+                                        #-------------------------------------------------------------------------------
+                                        else:
+                                            array_network_id.append(intf.networkobject_id)
                                         netwImpl.update(**data_build)
                                     else: #not exist then insert
                                         data_build['versions'].append(data_version)
+                                        # ------------------- merge -----------------------------------------------------
+                                        interfaces_value_field = data_build.get('Interfaces', None)
+                                        if interfaces_value_field is not None:
+                                            network_merge = netwImpl.get_field(self.deviceid, string_table_name,
+                                                                               'Interfaces', interfaces_value_field)
+                                            if network_merge is not None:
+                                                stringhelpers.info_green(
+                                                    "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
+                                                for k, v in data_build.items():
+                                                    if k != 'Interfaces':
+                                                        network_merge[str(k)] = v
+                                                network_merge.modified = datetime.now()
+                                                network_merge.save()
+                                                # -------------------------------------------------------------------------------
+                                        else:
+                                            array_network_id.append(intf.networkobject_id)
                                         intf = netwImpl.save(**data_build)
-                                        array_network_id.append(intf.networkobject_id)
                                 except Exception as ex:
                                     _strError = "[DISCOVERY][INSERT][UPDATE][%s]: %s | THREAD %s" % (ex, string_table_name, self.name)
                                     stringhelpers.err(_strError)

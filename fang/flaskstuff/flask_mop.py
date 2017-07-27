@@ -68,8 +68,9 @@ class FlaskSubMop(threading.Thread):
 
                     if len(self.result_templates) > 0:
                         self.mop_status('rolledback')
-                    else:
-                        self.mop_status('done')
+                else:
+                    self.mop_status('done')
+
             except:
                 pass
             #-----------------------------------------------------------------------------------------------------------
