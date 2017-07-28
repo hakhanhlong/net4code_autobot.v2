@@ -21,8 +21,8 @@ def main():
     '''_mega_manager = MegaManager('MEGA-MANAGEMENT', False)
     _mega_manager.start()'''
 
-    _flask_manager = FlaskManager('FLASK-MANAGEMENT', False)
-    _flask_manager.start()
+    '''_flask_manager = FlaskManager('FLASK-MANAGEMENT', False)
+    _flask_manager.start()'''
 
     _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False)
     _ironman_manager.start()

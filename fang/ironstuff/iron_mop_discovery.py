@@ -788,8 +788,9 @@ class Action(threading.Thread):
                                         else:
                                             pass
                                         '''
-                                        array_network_id.append(intf.networkobject_id)
                                         intf = netwImpl.save(**data_build)
+                                        array_network_id.append(intf.networkobject_id)
+
                                 except Exception as ex:
                                     _strError = "[DISCOVERY][INSERT][UPDATE][%s]: %s | THREAD %s" % (ex, string_table_name, self.name)
                                     stringhelpers.err(_strError)
