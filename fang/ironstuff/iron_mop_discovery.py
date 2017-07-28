@@ -51,7 +51,7 @@ class Iron_Mop_Discovery(threading.Thread):
             dict_update['duration_time'] = '%.2f' % (duration - self.start_time)
 
         self._request.params = dict_update
-        #self._request.put()
+        self._request.put()
 
     def run(self):
         if self.info_fang is not None:
