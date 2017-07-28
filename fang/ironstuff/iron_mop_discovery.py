@@ -754,7 +754,7 @@ class Action(threading.Thread):
                                             data_build['versions'] = versions
 
                                         #------------------- merge -----------------------------------------------------
-                                        interfaces_value_field = data_build.get('Interfaces', None)
+                                        '''interfaces_value_field = data_build.get('Interfaces', None)
                                         if interfaces_value_field is not None:
                                             network_merge = netwImpl.get_field(self.deviceid, string_table_name, 'Interfaces', interfaces_value_field)
                                             if network_merge is not None:
@@ -766,12 +766,13 @@ class Action(threading.Thread):
                                                 network_merge.save()
                                         #-------------------------------------------------------------------------------
                                         else:
-                                            array_network_id.append(intf.networkobject_id)
+                                            pass'''
+                                        array_network_id.append(intf.networkobject_id)
                                         netwImpl.update(**data_build)
                                     else: #not exist then insert
                                         data_build['versions'].append(data_version)
                                         # ------------------- merge -----------------------------------------------------
-                                        interfaces_value_field = data_build.get('Interfaces', None)
+                                        '''interfaces_value_field = data_build.get('Interfaces', None)
                                         if interfaces_value_field is not None:
                                             network_merge = netwImpl.get_field(self.deviceid, string_table_name,
                                                                                'Interfaces', interfaces_value_field)
@@ -785,7 +786,9 @@ class Action(threading.Thread):
                                                 network_merge.save()
                                                 # -------------------------------------------------------------------------------
                                         else:
-                                            array_network_id.append(intf.networkobject_id)
+                                            pass
+                                        '''
+                                        array_network_id.append(intf.networkobject_id)
                                         intf = netwImpl.save(**data_build)
                                 except Exception as ex:
                                     _strError = "[DISCOVERY][INSERT][UPDATE][%s]: %s | THREAD %s" % (ex, string_table_name, self.name)
