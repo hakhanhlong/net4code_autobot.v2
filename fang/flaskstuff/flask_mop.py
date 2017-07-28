@@ -32,7 +32,6 @@ class FlaskSubMop(threading.Thread):
 
     def run(self):
         if self.info_fang is not None:
-            self.mop_status('running')
             count = 0
             #-----------------------------------------------------------------------------------------------------------
             for fang in self.info_fang['subtemplates']: # fang sub template

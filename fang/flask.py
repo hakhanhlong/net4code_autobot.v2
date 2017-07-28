@@ -66,6 +66,7 @@ class FlaskManager(threading.Thread):
                             status = flask_sub_mop.join()
 
                             self.update_mop_status(status, mop_id, start_time, time())
+
                             del dict_template[key_mop]
 
 
