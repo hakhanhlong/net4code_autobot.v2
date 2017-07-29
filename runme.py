@@ -24,8 +24,8 @@ def main():
     _flask_manager = FlaskManager('FLASK-MANAGEMENT', False)
     _flask_manager.start()
 
-    _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False)
-    _ironman_manager.start()
+    '''_ironman_manager = IronManager('IRONMAN-MANAGEMENT', False)
+    _ironman_manager.start()'''
 
 
 if __name__ == '__main__':

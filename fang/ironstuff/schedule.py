@@ -77,7 +77,8 @@ class Schedule(threading.Thread):
                                         count = count + 1
                                 if count == len(arr_manager_discovery):
                                     stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
-                                    time.sleep(int(self.mop_data['return_after']) * 60)
+                                    #time.sleep(int(self.mop_data['return_after']) * 60)
+                                    time.sleep(2 * 60)
                                     break
                 except Exception as _exError:
                     stringhelpers.err("[ERROR] %s" % (_exError))

@@ -691,6 +691,7 @@ class Action(threading.Thread):
                             rows_dict = dict()
                             array_value = row.split()
                             data_build = dict(versions=[])
+                            data_merge = dict()
                             data_version = {}
 
                             #-------- get value follow colums ------------------------------------------------------
@@ -716,9 +717,14 @@ class Action(threading.Thread):
                                     if value is not '':
                                         data_build[field] = value
                                         data_version[field] = value
+
+                                        data_merge[field] = value
                                         is_insert = True
                                 except:
                                     pass
+
+
+
 
 
 
@@ -752,42 +758,10 @@ class Action(threading.Thread):
                                         if versions is not None:
                                             versions.append(data_version)
                                             data_build['versions'] = versions
-
-                                        #------------------- merge -----------------------------------------------------
-                                        '''interfaces_value_field = data_build.get('Interfaces', None)
-                                        if interfaces_value_field is not None:
-                                            network_merge = netwImpl.get_field(self.deviceid, string_table_name, 'Interfaces', interfaces_value_field)
-                                            if network_merge is not None:
-                                                stringhelpers.info_green("[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
-                                                for k, v in data_build.items():
-                                                    if k != 'Interfaces':
-                                                        network_merge[str(k)] = v
-                                                network_merge.modified = datetime.now()
-                                                network_merge.save()
-                                        #-------------------------------------------------------------------------------
-                                        else:
-                                            pass'''
                                         array_network_id.append(intf.networkobject_id)
                                         netwImpl.update(**data_build)
                                     else: #not exist then insert
                                         data_build['versions'].append(data_version)
-                                        # ------------------- merge -----------------------------------------------------
-                                        '''interfaces_value_field = data_build.get('Interfaces', None)
-                                        if interfaces_value_field is not None:
-                                            network_merge = netwImpl.get_field(self.deviceid, string_table_name,
-                                                                               'Interfaces', interfaces_value_field)
-                                            if network_merge is not None:
-                                                stringhelpers.info_green(
-                                                    "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
-                                                for k, v in data_build.items():
-                                                    if k != 'Interfaces':
-                                                        network_merge[str(k)] = v
-                                                network_merge.modified = datetime.now()
-                                                network_merge.save()
-                                                # -------------------------------------------------------------------------------
-                                        else:
-                                            pass
-                                        '''
                                         intf = netwImpl.save(**data_build)
                                         array_network_id.append(intf.networkobject_id)
 
@@ -834,6 +808,7 @@ class Action(threading.Thread):
                 if len(array_network_id) > 0:
                     netwImpl = NetworkObjectImpl()
                     list = netwImpl.get_list(self.deviceid, string_table_name, command_id)
+                    #list = netwImpl.get_list_by_device_table(self.deviceid, string_table_name)
                     if len(list) > 0:
                         for x in list:
                             if x.networkobject_id not in array_network_id:
@@ -842,6 +817,42 @@ class Action(threading.Thread):
                             for d in array_delete_networkobject:
                                 netwImpl.delete(d)
                                 stringhelpers.err('[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (str(d), str(self.deviceid), str(command_id)), '\n\n')
+                #---------------------------------------------------------------------------------------------------------------------------
+
+
+                # ------------------- merge ----------------------------------------------------------------------------
+                interfaces_value_field = data_build.get('Interfaces', None)
+                if interfaces_value_field is not None:
+                    network_merge = netwImpl.get_field(self.deviceid, string_table_name,
+                                                       'Interfaces', interfaces_value_field)
+                    if len(network_merge) > 1:
+                        count = 0
+                        merge_item_first = None
+                        network_impl = NetworkObjectImpl()
+                        data_master_merge = {}
+                        networkobject_id = 0
+                        for merge in network_merge:
+                            if count != 0:
+                                stringhelpers.info_green(
+                                    "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
+                                for k, v in data_merge.items():
+                                    if k != 'Interfaces':
+                                        merge_item_first[str(k)] = v
+
+                                network_impl.delete(merge.networkobject_id)
+                            else:
+                                merge_item_first = merge
+
+
+                            count = count + 1
+                        network_impl.update_merge(networkobject_id, **data_master_merge)
+
+                # ------------------------------------------------------------------------------------------------------
+
+
+
+
+
             else:
                 stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
             # dang xu ly

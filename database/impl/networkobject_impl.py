@@ -12,7 +12,7 @@ class NetworkObjectImpl():
         return s
 
     def get_field(self, device_id = 0, table = None, field_name=None, field_value=None):
-        s = NetworkObject.objects(__raw__={'device_id':device_id, str(field_name):str(field_value), 'table': table}).first()
+        s = NetworkObject.objects(__raw__={'device_id':device_id, str(field_name):str(field_value), 'table': table})
         return s
 
     def delete(self, networkobject_id = 0):
@@ -22,11 +22,24 @@ class NetworkObjectImpl():
     def get_list(self, device_id = 0, table=None, command_id=None):
         return NetworkObject.objects(device_id=device_id, table=table, command_id=command_id)
 
+
+    def get_list_by_device_table(self, device_id = 0, table=None):
+        return NetworkObject.objects(device_id=device_id, table=table)
+
     def save(self, **kwargs):
         s = NetworkObject()
         for k, val in kwargs.items():
             s[str(k)] = val
         return s.save()
+
+
+    def update_merge(self, networkobject_id = 0, **kwargs):
+        s = NetworkObject.objects(networkobject_id = networkobject_id).first()
+        for k, val in kwargs.items():
+            s[str(k)] = val
+        s.modified = datetime.datetime.now()
+        return s.save()
+
 
 
     def update(self, **kwargs):
