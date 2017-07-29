@@ -669,7 +669,7 @@ class Action(threading.Thread):
             string_contain_header = self.data_command['output'][step].get('template_header', None)  # default item 0 in array
             string_table_name = self.table_name
 
-
+            data_field_master = []
             if string_contain_header is not None:
                 array_header = []
 
@@ -722,7 +722,8 @@ class Action(threading.Thread):
                                         is_insert = True
                                 except:
                                     pass
-
+                            if is_insert:
+                                data_field_master.append(data_build)
 
 
 
@@ -821,38 +822,31 @@ class Action(threading.Thread):
 
 
                 # ------------------- merge ----------------------------------------------------------------------------
-                interfaces_value_field = data_build.get('Interfaces', None)
-                if interfaces_value_field is not None:
-                    network_merge = netwImpl.get_field(self.deviceid, string_table_name,
-                                                       'Interfaces', interfaces_value_field)
-                    if len(network_merge) > 1:
-                        count = 0
-                        merge_item_first = None
-                        network_impl = NetworkObjectImpl()
-                        data_master_merge = {}
-                        networkobject_id = 0
-                        for merge in network_merge:
-                            if count != 0:
-                                stringhelpers.info_green(
-                                    "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
-                                for k, v in data_merge.items():
-                                    if k != 'Interfaces':
-                                        merge_item_first[str(k)] = v
-
-                                network_impl.delete(merge.networkobject_id)
-                            else:
-                                merge_item_first = merge
 
 
-                            count = count + 1
-                        network_impl.update_merge(networkobject_id, **data_master_merge)
+                for data_field_item in data_field_master:
+                    interfaces_value_field = data_field_item.get('Interfaces', None)
+                    if interfaces_value_field is not None:
+                        network_merge = netwImpl.get_field(self.deviceid, string_table_name,
+                                                           'Interfaces', interfaces_value_field)
+                        if len(network_merge) > 1:
+                            count = 0
+                            merge_item_first = None
+                            for merge in network_merge:
+                                if count != 0:
+                                    stringhelpers.info_green(
+                                        "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
+                                    for k, v in data_merge.items():
+                                        if k != 'Interfaces':
+                                            merge_item_first[str(k)] = v
+                                    merge.delete()
+                                else:
+                                    merge_item_first = merge
+                                count = count + 1
 
+                            merge_item_first.modified = datetime.now()
+                            merge_item_first.save()
                 # ------------------------------------------------------------------------------------------------------
-
-
-
-
-
             else:
                 stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
             # dang xu ly
