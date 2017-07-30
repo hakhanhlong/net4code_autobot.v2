@@ -40,6 +40,8 @@ class Schedule(threading.Thread):
 
                 if time_current >= time_start:
                     self.is_waiting = False
+                else:
+                    stringhelpers.info('\n[IRON][DISCOVERY][START RUNNING TIME][%s]' % (str(self.mop_data['run_datetime'])))
             #-----------------------------------------------------------------------------------------------------------
             arr_manager_discovery = []
             while not self.is_stop:
