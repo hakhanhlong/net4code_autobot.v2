@@ -691,7 +691,6 @@ class Action(threading.Thread):
                             rows_dict = dict()
                             array_value = row.split()
                             data_build = dict(versions=[])
-                            data_merge = dict()
                             data_version = {}
 
                             #-------- get value follow colums ------------------------------------------------------
@@ -717,8 +716,6 @@ class Action(threading.Thread):
                                     if value is not '':
                                         data_build[field] = value
                                         data_version[field] = value
-
-                                        data_merge[field] = value
                                         is_insert = True
                                 except:
                                     pass
@@ -836,7 +833,7 @@ class Action(threading.Thread):
                                 if count != 0:
                                     stringhelpers.info_green(
                                         "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
-                                    for k, v in data_merge.items():
+                                    for k, v in data_field_item.items():
                                         if k != 'Interfaces':
                                             merge_item_first[str(k)] = v
                                     merge.delete()
