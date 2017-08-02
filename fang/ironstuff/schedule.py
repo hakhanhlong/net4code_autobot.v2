@@ -52,11 +52,14 @@ class Schedule(threading.Thread):
                     tableImpl = TABLEImpl()
                     table_name = tableImpl.get(table_id)['table_name']
 
+                    key_merge = self.mop_data.get('key_merge', None);
+
+
 
                     count_number = 0
                     for sub_mop_item in self.sub_mops:
                         irondiscovery = Iron_Mop_Discovery("IRONMAN-Thread-Template-%s" % (str(self.mop_id)),
-                                                      sub_mop_item, {}, self.mop_id, table_name, self.output_mapping[str(count_number)])
+                                                      sub_mop_item, {}, self.mop_id, table_name, self.output_mapping[str(count_number)], key_merge)
                         # insert to queue discovery
                         self.queue.put(irondiscovery)
                         arr_manager_discovery.append(irondiscovery)

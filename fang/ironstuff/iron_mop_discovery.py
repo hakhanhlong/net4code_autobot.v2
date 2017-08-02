@@ -19,7 +19,7 @@ from time import time, sleep
 #@functools.total_ordering
 class Iron_Mop_Discovery(threading.Thread):
     """ Thread instance each process template """
-    def __init__(self,  name, sub_mop = None, dict_template = {}, mop_id = None, table_name=None, output_mapping=None):
+    def __init__(self,  name, sub_mop = None, dict_template = {}, mop_id = None, table_name=None, output_mapping=None, key_merge=None):
         threading.Thread.__init__(self)
         self.name = name
         self.sub_mop = sub_mop
@@ -35,6 +35,7 @@ class Iron_Mop_Discovery(threading.Thread):
         self.start_time = time()
         self.table_name = table_name
         self.output_mapping = output_mapping
+        self.key_merge = key_merge
 
 
     def update_mop_status(self, status, duration=None):
@@ -60,7 +61,7 @@ class Iron_Mop_Discovery(threading.Thread):
             for fang in self.info_fang['subtemplates']: # fang sub template
                 sub_template_name = fang['sub_template_name']
                 #out_mapping = self.output_mapping.get(str(count), None)
-                subtemplate_thread = SubTemplate(sub_template_name, fang, False, self.result_templates, int(fang['mode']), self.table_name, self.output_mapping)
+                subtemplate_thread = SubTemplate(sub_template_name, fang, False, self.result_templates, int(fang['mode']), self.table_name, self.output_mapping, self.key_merge)
                 self.update_mop_status('running')
                 subtemplate_thread.start()
                 dict_template = dict(sub_template_name = sub_template_name, state = subtemplate_thread.join(), fang=fang, mode=int(fang['mode']))
@@ -137,7 +138,7 @@ class Iron_Mop_Discovery(threading.Thread):
 
 class SubTemplate(threading.Thread):
     '''sub template'''
-    def __init__(self, name, subtemplate=None, is_rollback=False, result_templates = None, mode = 0, table_name=None, output_mapping=None):
+    def __init__(self, name, subtemplate=None, is_rollback=False, result_templates = None, mode = 0, table_name=None, output_mapping=None, key_merge=None):
         threading.Thread.__init__(self)
         self.subtemplate = subtemplate
         self.name = name
@@ -151,6 +152,7 @@ class SubTemplate(threading.Thread):
         self.mode = mode
         self.table_name = table_name
         self.output_mapping = output_mapping
+        self.key_merge = key_merge
 
 
     def excecute(self, data_fang):
@@ -231,7 +233,7 @@ class SubTemplate(threading.Thread):
                                                        None, vendor_ios,
                                                        fac, self.is_rollback,
                                                        log_output_file_name, deviceid=device['device_id'],
-                                                       table_name = self.table_name, data_fields=data_fields)
+                                                       table_name = self.table_name, data_fields=data_fields, key_merge=self.key_merge)
 
                                 thread_action.start()
                                 result = thread_action.join()
@@ -250,7 +252,7 @@ class SubTemplate(threading.Thread):
                             thread_action = Action(thread_action_name, action_data, action_id, None,
                                                    None, vendor_ios,
                                                    fac, self.is_rollback, log_output_file_name,
-                                                   deviceid=device['device_id'], table_name =self.table_name, data_fields = data_fields)
+                                                   deviceid=device['device_id'], table_name =self.table_name, data_fields = data_fields, key_merge=self.key_merge)
                             thread_action.start()
                             result = thread_action.join()
                             result['action_id'] = action_id
@@ -404,7 +406,7 @@ class Action(threading.Thread):
     """ Thread instance each process mega """
     def __init__(self, name, data_action = None, action_id = None, params_action=None, param_rollback_action=None,
                  vendor_os=None, session_fang=None, is_rolback=False, file_log=None,
-                 deviceid=None, table_name=None, data_fields=None):
+                 deviceid=None, table_name=None, data_fields=None, key_merge=None):
         threading.Thread.__init__(self)
         self.name = name
         self.data_action = data_action
@@ -433,6 +435,7 @@ class Action(threading.Thread):
 
         self.table_name = table_name
         self.data_fields = data_fields
+        self.key_merge = key_merge
 
 
 
@@ -820,29 +823,31 @@ class Action(threading.Thread):
 
                 # ------------------- merge ------------------------------------------------------------------------------------------------
 
+                if self.key_merge is not None:
+                    for data_field_item in data_field_master:
+                        interfaces_value_field = data_field_item.get(str(self.key_merge), None)
+                        if interfaces_value_field is not None:
+                            network_merge = netwImpl.get_field(self.deviceid, string_table_name,
+                                                               str(self.key_merge), interfaces_value_field)
+                            if len(network_merge) > 1:
+                                count = 0
+                                merge_item_first = None
+                                for merge in network_merge:
+                                    if count != 0:
+                                        stringhelpers.info_green(
+                                            "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
+                                        for k, v in data_field_item.items():
+                                            if k != str(self.key_merge):
+                                                merge_item_first[str(k)] = v
+                                        merge.delete()
+                                    else:
+                                        merge_item_first = merge
+                                    count = count + 1
 
-                for data_field_item in data_field_master:
-                    interfaces_value_field = data_field_item.get('Interfaces', None)
-                    if interfaces_value_field is not None:
-                        network_merge = netwImpl.get_field(self.deviceid, string_table_name,
-                                                           'Interfaces', interfaces_value_field)
-                        if len(network_merge) > 1:
-                            count = 0
-                            merge_item_first = None
-                            for merge in network_merge:
-                                if count != 0:
-                                    stringhelpers.info_green(
-                                        "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
-                                    for k, v in data_field_item.items():
-                                        if k != 'Interfaces':
-                                            merge_item_first[str(k)] = v
-                                    merge.delete()
-                                else:
-                                    merge_item_first = merge
-                                count = count + 1
-
-                            merge_item_first.modified = datetime.now()
-                            merge_item_first.save()
+                                merge_item_first.modified = datetime.now()
+                                merge_item_first.save()
+                else:
+                    stringhelpers.err('[KEY_MERGE NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
                 # ------------------------------------------------------------------------------------------------------
             else:
                 stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
