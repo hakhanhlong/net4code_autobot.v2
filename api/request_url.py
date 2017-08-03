@@ -40,6 +40,8 @@ class RequestURL:
 
         self.IRONMAN_URL_GET_MOP_RUN_IRON = os.environ.get('IRONMAN_URL_GET_MOP_RUN_IRON')
 
+        self.IRONMAN_URL_GET_MOP_DETAIL = os.environ.get('IRONMAN_URL_GET_MOP_DETAIL')
+
         self.IRONMAN_URL_MOP_UPDATE = os.environ.get('IRONMAN_URL_MOP_UPDATE')
 
 

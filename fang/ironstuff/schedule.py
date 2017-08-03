@@ -51,11 +51,7 @@ class Schedule(threading.Thread):
                     table_id = int(self.mop_data['save_to_table'])
                     tableImpl = TABLEImpl()
                     table_name = tableImpl.get(table_id)['table_name']
-
                     key_merge = self.mop_data.get('key_merge', None);
-
-
-
                     count_number = 0
                     for sub_mop_item in self.sub_mops:
                         irondiscovery = Iron_Mop_Discovery("IRONMAN-Thread-Template-%s" % (str(self.mop_id)),

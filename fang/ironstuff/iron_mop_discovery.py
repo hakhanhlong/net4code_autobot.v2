@@ -625,7 +625,16 @@ class Action(threading.Thread):
                 #result_fang = self.fang.get_output()
                 result_fang = self.fang.get_action_output(self.log_output_file_name)
                 # processing parsing command follow output ###########################################
-                action_command_log = self.parsing(command_id ,result_fang, commands[0], step)
+
+                is_loop = self.data_action.get('is_loop', None)
+                if is_loop is not None:
+                    stringhelpers.info_green(
+                        "\n[DISCOVERY] COMMAND '%s' IS LOOP '%s'| THREAD %s" % (commands[0], is_loop, self.name))
+                    if is_loop == 'false':
+                        action_command_log = self.parsing(command_id ,result_fang, commands[0], step) #parsing merge
+                    else:
+                        action_command_log = self.parsing_loop(command_id, result_fang, commands[0], step) #parsing loop
+
                 action_command_log = None
                 return action_command_log
                 ######################################################################################
@@ -638,23 +647,57 @@ class Action(threading.Thread):
             stringhelpers.err("[DISCOVERY] MEGA ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name))
             return None
 
+
+    def parsing_loop(self, command_id = 0, result_fang = None, commandtext=None, step=''):
+        output_result = dict(deviceid=self.deviceid)
+        output_result['rows'] = []
+        try:
+            dict_parsing_field = dict()
+
+            key_loop_field = self.data_action.get('key_loop_field', None)
+            key_loop_value = self.data_action.get('key_loop_value', None)
+            is_process_insert = False
+
+            for x_command in self.data_command['output']:
+                start_by = x_command.get('start_by', None)
+                end_by = x_command.get('end_by', None)
+
+                field_name = x_command.get('name', None)
+
+                filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
+                if filter_result_fang is not None and filter_result_fang is not '':
+                    dict_parsing_field[str(field_name)] = filter_result_fang
+                    is_process_insert = True
+
+            if is_process_insert:
+                netwkImpl = NetworkObjectImpl()
+                networkObj = netwkImpl.get_field_first(self.deviceid, self.table_name, key_loop_field, key_loop_value)
+                if networkObj is not None:
+                    for x_field_k, x_field_v  in dict_parsing_field.items():
+                        networkObj[str(x_field_k)] = x_field_v
+                    networkObj.save()
+            return output_result
+
+        except Exception as _errorException:
+            _strError = "[DISCOVERY][LOOP] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (_errorException, self.name)
+            stringhelpers.err(_strError)
+            return output_result
+
+
     # parsing and insert/update database
     def parsing(self, command_id = 0, result_fang = None, commandtext=None, step=''):
-        final_result_output = []
         output_result = dict(deviceid=self.deviceid)
         output_result['rows'] = []
         key = str(command_id)
         output_result[key] = dict()
         output_result[key]['output'] = []
         array_network_id = []
-        array_index_length = []
         dict_index_header = dict()
         array_header_map  = {}
         try:
 
             if self.data_fields is None:
                 return None
-
             step = 0
 
             start_by = self.data_command['output'][step].get('start_by', None)
@@ -725,14 +768,7 @@ class Action(threading.Thread):
                             if is_insert:
                                 data_field_master.append(data_build)
 
-
-
-
-
-
-
                             data_version['modifieddate'] = datetime.now()
-
                             #---------------------------------------------------------------------------------------
 
                             if is_insert == True:
