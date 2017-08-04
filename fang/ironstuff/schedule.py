@@ -77,15 +77,21 @@ class Schedule(threading.Thread):
                                     if discovery_item.done == True:
                                         count = count + 1
                                 if count == len(arr_manager_discovery):
+
+                                    #----------------------------- get detail sub mop -------------------------------------------------------------
+                                    self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
+                                    _mop_details = self._request.get().json()
+                                    sub_mops = _mop_details.get('sub_mops', None)
+                                    if sub_mops is not None:
+                                        self.sub_mops = sub_mops
+                                    #--------------------------------------------------------------------------------------------------------------
+
                                     stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
                                     time.sleep(int(self.mop_data['return_after']) * 60)
                                     #time.sleep(2 * 60)
                                     break
                 except Exception as _exError:
                     stringhelpers.err("[ERROR] %s" % (_exError))
-
-
-
 
         except Exception as error:
             stringhelpers.err("[ERROR] %s %s" % (self.name, error))

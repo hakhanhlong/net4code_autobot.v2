@@ -651,6 +651,9 @@ class Action(threading.Thread):
     def parsing_loop(self, command_id = 0, result_fang = None, commandtext=None, step=''):
         output_result = dict(deviceid=self.deviceid)
         output_result['rows'] = []
+        key = str(command_id)
+        output_result[key] = dict()
+        output_result[key]['output'] = []
         try:
             dict_parsing_field = dict()
 
