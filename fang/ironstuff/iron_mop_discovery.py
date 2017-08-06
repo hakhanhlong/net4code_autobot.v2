@@ -621,19 +621,20 @@ class Action(threading.Thread):
             if command is not None:
                 commands = [command]
                 #stringhelpers.info_green(command)
-                self.fang.execute_template_action_command(commands, blanks=2, error_reporting=True, timeout=-1, terminal=False)
                 #result_fang = self.fang.get_output()
-                result_fang = self.fang.get_action_output(self.log_output_file_name)
+
                 # processing parsing command follow output ###########################################
 
                 is_loop = self.data_action.get('is_loop', None)
                 if is_loop is not None:
+                    self.fang.execute_template_action_command(commands, blanks=2, error_reporting=True, timeout=-1, terminal=False)
+                    result_fang = self.fang.get_action_output(self.log_output_file_name)
                     stringhelpers.info_green(
                         "\n[DISCOVERY] COMMAND '%s' IS LOOP '%s'| THREAD %s" % (commands[0], is_loop, self.name))
                     if is_loop == 'false':
-                        action_command_log = self.parsing(command_id ,result_fang, commands[0], step) #parsing merge
+                        self.parsing(command_id ,result_fang, commands[0], step) #parsing merge
                     else:
-                        action_command_log = self.parsing_loop(command_id, result_fang, commands[0], step) #parsing loop
+                        self.parsing_loop(command_id, result_fang, commands[0], step) #parsing loop
 
                 action_command_log = None
                 return action_command_log
@@ -665,10 +666,13 @@ class Action(threading.Thread):
                 start_by = x_command.get('start_by', None)
                 end_by = x_command.get('end_by', None)
 
+                if end_by == 'end_row':
+                    end_by = '\r\n'
+
                 field_name = x_command.get('name', None)
 
-                #filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
                 filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
+                #filter_result_fang = stringhelpers.find_between_r(result_fang, start_by, end_by)
                 if filter_result_fang is not None and filter_result_fang is not '':
                     dict_parsing_field[str(field_name)] = filter_result_fang
                     is_process_insert = True
@@ -843,6 +847,23 @@ class Action(threading.Thread):
                             is_next = True
                     row_count = row_count + 1
 
+                    # -------------------------------process delete interfaces & lldp if device not exist interface and lldp-----
+                    array_delete_networkobject = []
+                    if len(array_network_id) > 0:
+                        netwImpl = NetworkObjectImpl()
+                        list = netwImpl.get_list(self.deviceid, string_table_name, command_id)
+                        if len(list) > 0:
+                            for x in list:
+                                if x.networkobject_id not in array_network_id:
+                                    array_delete_networkobject.append(x.networkobject_id)
+                            if len(array_delete_networkobject) > 0:
+                                for d in array_delete_networkobject:
+                                    netwImpl.delete(d)
+                                    stringhelpers.err(
+                                        '[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (
+                                            str(d), str(self.deviceid), str(command_id)), '\n\n')
+                    # ---------------------------------------------------------------------------------------------------------------------------
+
                 # ------------------- merge ------------------------------------------------------------------------------------------------
 
                 if self.key_merge is not None:
@@ -873,22 +894,9 @@ class Action(threading.Thread):
                 # --------------------------------------------------------------------------------------------------------------------------
 
 
-                # -------------------------------process delete interfaces & lldp if device not exist interface and lldp-----
-                array_delete_networkobject = []
-                if len(array_network_id) > 0:
-                    netwImpl = NetworkObjectImpl()
-                    list = netwImpl.get_list(self.deviceid, string_table_name, command_id)
-                    if len(list) > 0:
-                        for x in list:
-                            if x.networkobject_id not in array_network_id:
-                                array_delete_networkobject.append(x.networkobject_id)
-                        if len(array_delete_networkobject) > 0:
-                            for d in array_delete_networkobject:
-                                netwImpl.delete(d)
-                                stringhelpers.err(
-                                    '[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (
-                                    str(d), str(self.deviceid), str(command_id)), '\n\n')
-                # ---------------------------------------------------------------------------------------------------------------------------
+
+
+
 
             else:
                 stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')

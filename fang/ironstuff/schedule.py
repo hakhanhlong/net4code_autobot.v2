@@ -85,7 +85,6 @@ class Schedule(threading.Thread):
                                     if sub_mops is not None:
                                         self.sub_mops = sub_mops
                                     #--------------------------------------------------------------------------------------------------------------
-
                                     stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
                                     time.sleep(int(self.mop_data['return_after']) * 60)
                                     #time.sleep(2 * 60)
