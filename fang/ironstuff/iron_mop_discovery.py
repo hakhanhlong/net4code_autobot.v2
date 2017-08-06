@@ -842,24 +842,6 @@ class Action(threading.Thread):
                             is_next = True
                     row_count = row_count + 1
 
-
-                #-------------------------------process delete interfaces & lldp if device not exist interface and lldp-----
-                array_delete_networkobject = []
-                if len(array_network_id) > 0:
-                    netwImpl = NetworkObjectImpl()
-                    list = netwImpl.get_list(self.deviceid, string_table_name, command_id)
-                    #list = netwImpl.get_list_by_device_table(self.deviceid, string_table_name)
-                    if len(list) > 0:
-                        for x in list:
-                            if x.networkobject_id not in array_network_id:
-                                array_delete_networkobject.append(x.networkobject_id)
-                        if len(array_delete_networkobject) > 0:
-                            for d in array_delete_networkobject:
-                                netwImpl.delete(d)
-                                stringhelpers.err('[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (str(d), str(self.deviceid), str(command_id)), '\n\n')
-                #---------------------------------------------------------------------------------------------------------------------------
-
-
                 # ------------------- merge ------------------------------------------------------------------------------------------------
 
                 if self.key_merge is not None:
@@ -887,7 +869,27 @@ class Action(threading.Thread):
                                 merge_item_first.save()
                 else:
                     stringhelpers.err('[KEY_MERGE NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
-                # ------------------------------------------------------------------------------------------------------
+                # --------------------------------------------------------------------------------------------------------------------------
+
+
+                # -------------------------------process delete interfaces & lldp if device not exist interface and lldp-----
+                array_delete_networkobject = []
+                if len(array_network_id) > 0:
+                    netwImpl = NetworkObjectImpl()
+                    list = netwImpl.get_list(self.deviceid, string_table_name, command_id)
+                    # list = netwImpl.get_list_by_device_table(self.deviceid, string_table_name)
+                    if len(list) > 0:
+                        for x in list:
+                            if x.networkobject_id not in array_network_id:
+                                array_delete_networkobject.append(x.networkobject_id)
+                        if len(array_delete_networkobject) > 0:
+                            for d in array_delete_networkobject:
+                                netwImpl.delete(d)
+                                stringhelpers.err(
+                                    '[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (
+                                    str(d), str(self.deviceid), str(command_id)), '\n\n')
+                                # ---------------------------------------------------------------------------------------------------------------------------
+
             else:
                 stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
             # dang xu ly
