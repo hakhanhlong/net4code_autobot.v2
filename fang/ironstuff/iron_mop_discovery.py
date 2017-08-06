@@ -667,7 +667,8 @@ class Action(threading.Thread):
 
                 field_name = x_command.get('name', None)
 
-                filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
+                #filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
+                filter_result_fang = stringhelpers.find_between_r(result_fang, start_by, end_by)
                 if filter_result_fang is not None and filter_result_fang is not '':
                     dict_parsing_field[str(field_name)] = filter_result_fang
                     is_process_insert = True
@@ -877,7 +878,6 @@ class Action(threading.Thread):
                 if len(array_network_id) > 0:
                     netwImpl = NetworkObjectImpl()
                     list = netwImpl.get_list(self.deviceid, string_table_name, command_id)
-                    # list = netwImpl.get_list_by_device_table(self.deviceid, string_table_name)
                     if len(list) > 0:
                         for x in list:
                             if x.networkobject_id not in array_network_id:
@@ -888,11 +888,10 @@ class Action(threading.Thread):
                                 stringhelpers.err(
                                     '[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (
                                     str(d), str(self.deviceid), str(command_id)), '\n\n')
-                                # ---------------------------------------------------------------------------------------------------------------------------
+                # ---------------------------------------------------------------------------------------------------------------------------
 
             else:
                 stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
-            # dang xu ly
 
                 #-----------------------------------------------------------------------------------------------------------------------------
 
