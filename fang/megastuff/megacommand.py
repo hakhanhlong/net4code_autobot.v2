@@ -148,7 +148,8 @@ class MegaCommand(threading.Thread):
                     else:
                         if end_by == 'end_row':
                             end_by = '\r\n'
-                        _ret_value = stringhelpers.find_between(cmd_log['console_log'], start_by, end_by).strip()
+                        #_ret_value = stringhelpers.find_between(cmd_log['console_log'], start_by, end_by).strip()
+                        _ret_value = stringhelpers.find_between_r(cmd_log['console_log'], start_by, end_by).strip()
                         output_result.append({'value': _ret_value, 'compare': True})
                         cmd_log['result']['outputs'] = output_result
                         cmd_log['result']['final_output'] = True
@@ -168,7 +169,8 @@ class MegaCommand(threading.Thread):
                             compare = output_item['compare']
                             if end_by == 'end_row':
                                 end_by = '\r\n'
-                            compare_value = stringhelpers.find_between(cmd_log['console_log'], start_by, end_by).strip()
+                            #compare_value = stringhelpers.find_between(cmd_log['console_log'], start_by, end_by).strip()
+                            compare_value = stringhelpers.find_between_r(cmd_log['console_log'], start_by, end_by).strip()
                             if compare_value is not None or compare_value is not '':
                                 if compare != "contains":
                                     compare_value = int(compare_value)
