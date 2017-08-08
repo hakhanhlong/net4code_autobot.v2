@@ -677,9 +677,13 @@ class Action(threading.Thread):
                 end_by = x_command.get('end_by', None)
 
                 if end_by == 'end_row':
-                    end_by = '\r\n'
+                    end_by = '\n'
 
                 field_name = x_command.get('name', None)
+                field_name = self.data_fields[str(command_id)].get(field_name, None)
+                if field_name is None:
+                    field_name = field_name.lower()
+                    field_name = self.data_fields[str(command_id)].get(field_name, None)
 
                 filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
                 #filter_result_fang = stringhelpers.find_between_r(result_fang, start_by, end_by)
