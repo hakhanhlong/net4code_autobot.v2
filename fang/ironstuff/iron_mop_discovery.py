@@ -19,7 +19,8 @@ from time import time, sleep
 #@functools.total_ordering
 class Iron_Mop_Discovery(threading.Thread):
     """ Thread instance each process template """
-    def __init__(self,  name, sub_mop = None, dict_template = {}, mop_id = None, table_name=None, output_mapping=None, key_merge=None):
+    def __init__(self,  name, sub_mop = None, dict_template = {}, mop_id = None, table_name=None, output_mapping=None,
+                 key_merge=None, submop_index=None):
         threading.Thread.__init__(self)
         self.name = name
         self.sub_mop = sub_mop
@@ -36,6 +37,7 @@ class Iron_Mop_Discovery(threading.Thread):
         self.table_name = table_name
         self.output_mapping = output_mapping
         self.key_merge = key_merge
+        self.submop_index = submop_index
 
 
     def update_mop_status(self, status, duration=None):
@@ -61,7 +63,8 @@ class Iron_Mop_Discovery(threading.Thread):
             for fang in self.info_fang['subtemplates']: # fang sub template
                 sub_template_name = fang['sub_template_name']
                 #out_mapping = self.output_mapping.get(str(count), None)
-                subtemplate_thread = SubTemplate(sub_template_name, fang, False, self.result_templates, int(fang['mode']), self.table_name, self.output_mapping, self.key_merge)
+                subtemplate_thread = SubTemplate(sub_template_name, fang, False, self.result_templates, int(fang['mode']),
+                                                 self.table_name, self.output_mapping, self.key_merge, self.submop_index)
                 self.update_mop_status('running')
                 subtemplate_thread.start()
                 dict_template = dict(sub_template_name = sub_template_name, state = subtemplate_thread.join(), fang=fang, mode=int(fang['mode']))
@@ -138,7 +141,8 @@ class Iron_Mop_Discovery(threading.Thread):
 
 class SubTemplate(threading.Thread):
     '''sub template'''
-    def __init__(self, name, subtemplate=None, is_rollback=False, result_templates = None, mode = 0, table_name=None, output_mapping=None, key_merge=None):
+    def __init__(self, name, subtemplate=None, is_rollback=False, result_templates = None, mode = 0, table_name=None,
+                 output_mapping=None, key_merge=None, submop_index=None):
         threading.Thread.__init__(self)
         self.subtemplate = subtemplate
         self.name = name
@@ -153,6 +157,7 @@ class SubTemplate(threading.Thread):
         self.table_name = table_name
         self.output_mapping = output_mapping
         self.key_merge = key_merge
+        self.submop_index = submop_index
 
 
     def excecute(self, data_fang):
@@ -233,7 +238,8 @@ class SubTemplate(threading.Thread):
                                                        None, vendor_ios,
                                                        fac, self.is_rollback,
                                                        log_output_file_name, deviceid=device['device_id'],
-                                                       table_name = self.table_name, data_fields=data_fields, key_merge=self.key_merge)
+                                                       table_name = self.table_name, data_fields=data_fields, key_merge=self.key_merge,
+                                                       submop_index=self.submop_index)
 
                                 thread_action.start()
                                 result = thread_action.join()
@@ -252,7 +258,9 @@ class SubTemplate(threading.Thread):
                             thread_action = Action(thread_action_name, action_data, action_id, None,
                                                    None, vendor_ios,
                                                    fac, self.is_rollback, log_output_file_name,
-                                                   deviceid=device['device_id'], table_name =self.table_name, data_fields = data_fields, key_merge=self.key_merge)
+                                                   deviceid=device['device_id'], table_name =self.table_name, data_fields = data_fields,
+                                                   key_merge=self.key_merge,
+                                                   submop_index=self.submop_index)
                             thread_action.start()
                             result = thread_action.join()
                             result['action_id'] = action_id
@@ -406,7 +414,7 @@ class Action(threading.Thread):
     """ Thread instance each process mega """
     def __init__(self, name, data_action = None, action_id = None, params_action=None, param_rollback_action=None,
                  vendor_os=None, session_fang=None, is_rolback=False, file_log=None,
-                 deviceid=None, table_name=None, data_fields=None, key_merge=None):
+                 deviceid=None, table_name=None, data_fields=None, key_merge=None, submop_index=None):
         threading.Thread.__init__(self)
         self.name = name
         self.data_action = data_action
@@ -418,6 +426,8 @@ class Action(threading.Thread):
         self.fang = session_fang
         self.log_output_file_name = file_log
         self.vendor_os = vendor_os
+
+        self.submop_index = submop_index
 
         self.params_action = params_action
         self.param_rollback_action = param_rollback_action
@@ -684,6 +694,9 @@ class Action(threading.Thread):
                     for x_field_k, x_field_v  in dict_parsing_field.items():
                         networkObj[str(x_field_k)] = x_field_v
                     networkObj.save()
+                    stringhelpers.info_green(
+                        "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
+
             return output_result
 
         except Exception as _errorException:
@@ -737,6 +750,9 @@ class Action(threading.Thread):
                 is_next = False
                 row_count = 0
 
+                field_master = dict()
+
+
                 for row in arrayRow:
                     if row == '':
                         continue
@@ -746,6 +762,7 @@ class Action(threading.Thread):
                             array_value = row.split()
                             data_build = dict(versions=[])
                             data_version = {}
+
 
                             #-------- get value follow colums ------------------------------------------------------
                             is_insert = False
@@ -766,13 +783,17 @@ class Action(threading.Thread):
                                         field = self.data_fields[str(command_id)].get(key_field, None)
 
 
+
                                     #array_check_whitespace = [v for v in value if v.isspace()]
                                     if value is not '':
                                         data_build[field] = value
                                         data_version[field] = value
                                         is_insert = True
+                                        if field_master.get(str(field), None) is None:
+                                            field_master[str(field)] = field
                                 except:
                                     pass
+
                             if is_insert:
                                 data_field_master.append(data_build)
 
@@ -807,8 +828,32 @@ class Action(threading.Thread):
                                         netwImpl.update(**data_build)
                                     else: #not exist then insert
                                         data_build['versions'].append(data_version)
-                                        intf = netwImpl.save(**data_build)
-                                        array_network_id.append(intf.networkobject_id)
+                                        if self.key_merge is not None and self.submop_index == 0:
+                                            data_build['is_merge'] = True
+                                            intf = netwImpl.save(**data_build)
+                                            array_network_id.append(intf.networkobject_id)
+                                        elif self.key_merge is not None and self.submop_index > 0:
+
+                                            merge_item_first = netwImpl.get_field_first(self.deviceid,
+                                                                                        string_table_name,
+                                                                                        str(self.key_merge),
+                                                                                        data_build[str(self.key_merge)])
+                                            if merge_item_first is not None:
+                                                for k, v in field_master.items():
+                                                    merge_item_first[str(k)] = data_build[str(k)]
+                                                merge_item_first.save()
+                                                stringhelpers.info_green(
+                                                    "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (
+                                                    str(self.deviceid), str(command_id)), "\n")
+
+                                            else:
+                                                intf = netwImpl.save(**data_build)
+                                                array_network_id.append(intf.networkobject_id)
+                                        else:
+                                            #insert nhu binh thuong
+                                            intf = netwImpl.save(**data_build)
+                                            array_network_id.append(intf.networkobject_id)
+
 
                                 except Exception as ex:
                                     _strError = "[DISCOVERY][INSERT][UPDATE][%s]: %s | THREAD %s" % (ex, string_table_name, self.name)
@@ -847,56 +892,65 @@ class Action(threading.Thread):
                             is_next = True
                     row_count = row_count + 1
 
-                    # -------------------------------process delete interfaces & lldp if device not exist interface and lldp-----
-                    array_delete_networkobject = []
-                    if len(array_network_id) > 0:
-                        netwImpl = NetworkObjectImpl()
-                        list = netwImpl.get_list(self.deviceid, string_table_name, command_id)
-                        if len(list) > 0:
-                            for x in list:
-                                if x.networkobject_id not in array_network_id:
-                                    array_delete_networkobject.append(x.networkobject_id)
-                            if len(array_delete_networkobject) > 0:
-                                for d in array_delete_networkobject:
-                                    netwImpl.delete(d)
-                                    stringhelpers.err(
-                                        '[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (
-                                            str(d), str(self.deviceid), str(command_id)), '\n\n')
-                    # ---------------------------------------------------------------------------------------------------------------------------
+                # -------------------------------process delete interfaces & lldp if device not exist interface and lldp-----
+                array_delete_networkobject = []
+                if len(array_network_id) > 0:
+                    netwImpl = NetworkObjectImpl()
+                    list = netwImpl.get_list(self.deviceid, string_table_name, command_id)
+                    if len(list) > 0:
+                        for x in list:
+                            if x.networkobject_id not in array_network_id:
+                                array_delete_networkobject.append(x.networkobject_id)
+                        if len(array_delete_networkobject) > 0:
+                            for d in array_delete_networkobject:
+                                netwImpl.delete(d)
+                                stringhelpers.err(
+                                    '[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (
+                                        str(d), str(self.deviceid), str(command_id)), '\n\n')
+                # --------------------------------------------------------------------------------------------------------------
 
-                # ------------------- merge ------------------------------------------------------------------------------------------------
+                # ------------------- merge ----------------------------------------------------------------------------------------
 
-                if self.key_merge is not None:
+                '''if self.key_merge is not None:
+
                     for data_field_item in data_field_master:
                         interfaces_value_field = data_field_item.get(str(self.key_merge), None)
                         if interfaces_value_field is not None:
+                            merge_item_first = netwImpl.get_field_first(self.deviceid, string_table_name,
+                                                                        str(self.key_merge),
+                                                                        interfaces_value_field)
+
                             network_merge = netwImpl.get_field(self.deviceid, string_table_name,
                                                                str(self.key_merge), interfaces_value_field)
                             if len(network_merge) > 1:
                                 count = 0
-                                merge_item_first = None
                                 for merge in network_merge:
                                     if count != 0:
                                         stringhelpers.info_green(
                                             "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
-                                        for k, v in data_field_item.items():
-                                            if k != str(self.key_merge):
-                                                merge_item_first[str(k)] = v
+
+                                        for field_key,field_value  in field_master.items():
+                                            if field_value != str(self.key_merge):
+                                                merge_item_first[str(field_value)] = data_field_item[str(field_value)]
+
+                                        #for k, v in data_field_item.items():
+                                        #    if k != str(self.key_merge):
+                                        #        merge_item_first[str(k)] = v
+
                                         merge.delete()
                                     else:
-                                        merge_item_first = merge
+                                        if merge_item_first is None:
+                                            merge_item_first = merge
                                     count = count + 1
 
+                                #if merge is not None:
                                 merge_item_first.modified = datetime.now()
+                                merge_item_first.is_merge = True
                                 merge_item_first.save()
                 else:
                     stringhelpers.err('[KEY_MERGE NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
                 # --------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-
+                '''
 
             else:
                 stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
