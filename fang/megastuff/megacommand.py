@@ -139,6 +139,12 @@ class MegaCommand(threading.Thread):
                 else:
                     data_command_output = self.data_command['output']
                 for output_item in data_command_output:
+
+                    start_line = output_item.get('start_line', None)
+                    end_line = output_item.get('end_line', None)
+                    if start_line is not None and end_line is not None:
+                        cmd_log['console_log'] = stringhelpers.find_between_keep_str_start(cmd_log['console_log'], start_line, end_line)
+
                     start_by = output_item['start_by']
                     end_by = output_item['end_by']
                     if start_by == '' and end_by == '':
@@ -160,6 +166,13 @@ class MegaCommand(threading.Thread):
                 else:
                     data_command_output = self.data_command['output']
                 for output_item in data_command_output:
+
+                    start_line = output_item.get('start_line', None)
+                    end_line = output_item.get('end_line', None)
+                    if start_line is not None and end_line is not None:
+                        cmd_log['console_log'] = stringhelpers.find_between_keep_str_start(cmd_log['console_log'],
+                                                                                           start_line, end_line)
+
                     if output_item['start_by'] is not '' and output_item['end_by'] is not '':
                         try:
                             start_by = output_item['start_by']

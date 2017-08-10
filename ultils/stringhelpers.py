@@ -85,6 +85,17 @@ def find_between( s, first, last ):
     except Exception:
         return None
 
+
+'''find string between keep start_by'''
+def find_between_keep_str_start( s, first, last ):
+    try:
+        start = s.index( first )
+        end = s.index( last, start )
+        return s[start:end]
+    except Exception:
+        return None
+
+
 '''find string between right'''
 def find_between_r( s, first, last ):
     try:

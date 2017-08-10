@@ -673,17 +673,34 @@ class Action(threading.Thread):
             is_process_insert = False
 
             for x_command in self.data_command['output']:
+
+                start_line = x_command.get('start_line', None)
+                end_line = x_command.get('end_line', None)
+
+
+
+                if start_line is not None and end_line is not None:
+                    if end_line == 'end_row' or end_line == '\\n':
+                        end_line = '\n'
+                    result_fang = stringhelpers.find_between_keep_str_start(result_fang, start_line, end_line)
+
                 start_by = x_command.get('start_by', None)
                 end_by = x_command.get('end_by', None)
 
-                if end_by == 'end_row':
+                if end_by == 'end_row' or end_by == '\\n':
                     end_by = '\n'
 
-                field_name = x_command.get('name', None)
-                field_name = self.data_fields[str(command_id)].get(field_name, None)
-                if field_name is None:
-                    field_name = field_name.lower()
+                try:
+                    field_name = x_command.get('name', None)
                     field_name = self.data_fields[str(command_id)].get(field_name, None)
+                    if field_name is None:
+                        field_name = field_name.lower()
+                        field_name = self.data_fields[str(command_id)].get(field_name, None)
+                except Exception as _error_field:
+                    _strError = "[DISCOVERY][LOOP][ERROR][FIELD] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (
+                        _error_field, self.name)
+                    stringhelpers.err(_strError)
+
 
                 filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
                 #filter_result_fang = stringhelpers.find_between_r(result_fang, start_by, end_by)
@@ -724,6 +741,11 @@ class Action(threading.Thread):
             if self.data_fields is None:
                 return None
             step = 0
+
+            start_line = self.data_command['output'][step].get('start_line', None)
+            end_line = self.data_command['output'][step].get('end_line', None)
+            if start_line is not None and end_line is not None:
+                result_fang = stringhelpers.find_between_keep_str_start(result_fang, start_line, end_line)
 
             start_by = self.data_command['output'][step].get('start_by', None)
             end_by = self.data_command['output'][step].get('end_by', None)
@@ -866,29 +888,48 @@ class Action(threading.Thread):
 
                                 output_result['rows'].append(rows_dict)
 
-                        if string_contain_header in row:
-
+                        if (string_contain_header in row) or ('h1' in string_contain_header) or ('h2' in string_contain_header):
                             # build header and extract size header for value
                             for config_output in self.data_command['output']:
                                 try:
-                                    #header_start #header_end
-                                    header_start = config_output['header_start']
-                                    header_end = config_output.get('header_end', None)
-                                    index_start = row.index(header_start)
+                                    if is_next is not True:
+                                        if ('h1' in string_contain_header) or ('h2' in string_contain_header):
+                                            #header_start #header_end
+                                            #process header manual definition
+                                            header_start = config_output['header_start']
+                                            header_end = config_output.get('header_end', None)
+                                            index_start = row.index(header_start)
 
-                                    name = config_output.get('name', None) #save field to db
+                                            name = config_output.get('name', None) #save field to db
+                                            if header_end is None or header_end is '':
+                                                index_end = len(row) * 15
+                                            else:
+                                                index_end = row.index(header_end)
 
-                                    if header_end is None:
-                                        index_end = len(row) * 15
-                                    else:
-                                        index_end = row.index(header_end)
+                                            header = row[index_start:index_end].strip()
 
-                                    header = row[index_start:index_end].strip()
+                                            array_header_map[header] = name
+                                            dict_index_header[header] = (index_start, index_end)
 
-                                    array_header_map[header] = name
+                                            array_header.append(header)
+                                        else:
+                                            # header_start #header_end
+                                            header_start = config_output['header_start']
+                                            header_end = config_output.get('header_end', None)
+                                            index_start = row.index(header_start)
+                                            name = config_output.get('name', None)  # save field to db
 
-                                    dict_index_header[header] = (index_start, index_end)
-                                    array_header.append(header)
+                                            if header_end is None:
+                                                index_end = len(row) * 15
+                                            else:
+                                                index_end = row.index(header_end)
+
+                                            header = row[index_start:index_end].strip()
+
+                                            array_header_map[header] = name
+                                            dict_index_header[header] = (index_start, index_end)
+                                            array_header.append(header)
+
                                 except Exception as _outputHeaderError:
                                     _strError = "[DISCOVERY][PARSING][HEADER][%s]: %s | THREAD %s" % (self.name, _outputHeaderError)
                                     stringhelpers.err(_strError)

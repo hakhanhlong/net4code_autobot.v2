@@ -405,6 +405,13 @@ class MegaAction(threading.Thread):
                 for output_item in data_command_output:
                     #if output_item['start_by'] is not '' and output_item['end_by'] is not '':
                     try:
+
+                        start_line = output_item.get('start_line', None)
+                        end_line = output_item.get('end_line', None)
+                        if start_line is not None and end_line is not None:
+                            result_fang = stringhelpers.find_between_keep_str_start(result_fang,
+                                                                                               start_line, end_line)
+
                         start_by = output_item['start_by']
                         end_by = output_item['end_by']
                         standard_value = output_item['standard_value']
