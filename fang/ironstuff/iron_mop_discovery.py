@@ -167,6 +167,7 @@ class SubTemplate(threading.Thread):
         device = data_fang['device']['device_info']
         self.dict_state_result[str(device['device_id'])] = {}
         vendor_ios = data_fang['device']['vendor_ios']
+        #vendor_ios = data_fang['device']['vendor'] + '|' + data_fang['device']['os']
         host = device['ip_mgmt']
         port = int(device['port_mgmt'])
         username = device['username']
@@ -222,8 +223,6 @@ class SubTemplate(threading.Thread):
                         vendor_ios, str(device['device_id']), str(action_id)))
 
                         return None
-
-
                     try:
                         thread_action_name = "Thread-Action_%s-In-%s" % (action_id, self.name)
                         action_data = _action
