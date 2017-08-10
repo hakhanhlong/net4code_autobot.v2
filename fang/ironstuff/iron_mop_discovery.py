@@ -672,23 +672,32 @@ class Action(threading.Thread):
             key_loop_value = self.data_action.get('key_loop_value', None)
             is_process_insert = False
 
+            original_result_fang = result_fang
+
+            array_result_fang = stringhelpers.text_to_arrayrow(result_fang)
+
             for x_command in self.data_command['output']:
 
                 start_line = x_command.get('start_line', None)
                 end_line = x_command.get('end_line', None)
-
-
-
-                if start_line is not None and end_line is not None:
-                    if end_line == 'end_row' or end_line == '\\n':
-                        end_line = '\n'
-                    result_fang = stringhelpers.find_between_keep_str_start(result_fang, start_line, end_line)
 
                 start_by = x_command.get('start_by', None)
                 end_by = x_command.get('end_by', None)
 
                 if end_by == 'end_row' or end_by == '\\n':
                     end_by = '\n'
+
+                if start_line is not None and end_line is not None:
+                    if end_line == 'end_row' or end_line == '\\n':
+                        end_line = '\n'
+                    for row_result in array_result_fang:
+                        if start_line in row_result:
+                            result_fang = row_result + end_line
+                            break;
+
+                    #result_fang = stringhelpers.find_between_keep_str_start(result_fang, start_line, end_line)
+                else:
+                    return None
 
                 try:
                     field_name = x_command.get('name', None)
