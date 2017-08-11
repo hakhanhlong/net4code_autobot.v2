@@ -758,6 +758,8 @@ class Action(threading.Thread):
             start_by = self.data_command['output'][step].get('start_by', None)
             end_by = self.data_command['output'][step].get('end_by', None)
 
+
+            #if ((start_by is not None) or (start_by is not '')) and ((end_by is not None) or (end_by is not '')):
             result_fang = stringhelpers.find_between_r(result_fang, start_by, end_by)
 
 
@@ -815,8 +817,6 @@ class Action(threading.Thread):
                                     if field is None:
                                         key_field = config_output['name'].lower()
                                         field = self.data_fields[str(command_id)].get(key_field, None)
-
-
 
                                     #array_check_whitespace = [v for v in value if v.isspace()]
                                     if value is not '':
@@ -927,7 +927,7 @@ class Action(threading.Thread):
                                             index_start = row.index(header_start)
                                             name = config_output.get('name', None)  # save field to db
 
-                                            if header_end is None:
+                                            if header_end is None or header_end is '':
                                                 index_end = len(row) * 15
                                             else:
                                                 index_end = row.index(header_end)
