@@ -76,8 +76,10 @@ class BaseHandler:
             if index != 2:
                 self.auth_failed('login failed.')
                 return False
-
-        return True
+        result = True
+        if result:
+            print("Connect SUCCESS at '{}, port {}'.\n".format(self.host, self.port))
+            return True
 
     def logout(self):
         self.session.sendline('exit')

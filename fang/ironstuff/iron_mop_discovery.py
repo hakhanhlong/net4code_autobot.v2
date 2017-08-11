@@ -183,13 +183,15 @@ class SubTemplate(threading.Thread):
             'port': port,
             'timeout': 300
         }
-        print("\nMEGA SUBTEMPLATE FANG DEVICE: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
+        print("\nMEGA DISCOVERY FANG DEVICE: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
         fac = FactoryConnector(**parameters)
         log_output_file_name = "%s.log" % (stringhelpers.generate_random_keystring(10))
         fac = fac.execute_keep_alive(loginfo=log_output_file_name)
         if not fac.is_alive():
             print("CONNECT DEVICE: host=%s, port=%s, devicetype=%s FAIL\n\n" % (parameters['host'], parameters['port'], parameters['device_type']))
             return None
+        else:
+            print("\nMEGA DISCOVERY CONNECTED DEVICE [SUCCESS]: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
         #---------------------------------------------------------------------------------------------------------------
 
         # --------------- list dict action command ---------------------------------------------------------------------
@@ -671,8 +673,6 @@ class Action(threading.Thread):
             key_loop_value = self.data_action.get('key_loop_value', None)
             is_process_insert = False
 
-            original_result_fang = result_fang
-
             array_result_fang = stringhelpers.text_to_arrayrow(result_fang)
 
             for x_command in self.data_command['output']:
@@ -705,8 +705,7 @@ class Action(threading.Thread):
                         field_name = field_name.lower()
                         field_name = self.data_fields[str(command_id)].get(field_name, None)
                 except Exception as _error_field:
-                    _strError = "[DISCOVERY][LOOP][ERROR][FIELD] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (
-                        _error_field, self.name)
+                    _strError = "[DISCOVERY][LOOP][ERROR][FIELD] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (_error_field, self.name)
                     stringhelpers.err(_strError)
 
                 result_fang_original = result_fang

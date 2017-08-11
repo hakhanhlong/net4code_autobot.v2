@@ -42,7 +42,7 @@ class IronManager(threading.Thread):
             try:
                 self.counter = self.counter + 1
                 # -------------- IRONMAN RUN SCHEDULE ----------------------------------------------------------------
-                stringhelpers.print_bold("IRONMAN SCHEDULE RUN NUMBER: " + str(self.counter), "\n")
+                #stringhelpers.print_bold("IRONMAN SCHEDULE RUN NUMBER: " + str(self.counter), "\n")
                 # get current day name
                 #weekday = datetime.now().strftime('%A')
                 #_request.url = self.requestURL.IRONMAN_URL_GET_SCHEDULE % (weekday)
@@ -50,7 +50,6 @@ class IronManager(threading.Thread):
                 _list_schedules = _request.get().json()
                 if len(_list_schedules) > 0:
                     for x in _list_schedules:
-                        stringhelpers.print_bold("IRONMAN RUN MOP: " + str(x['mop_id']), "\n")
                         key_mop = 'main_schedule_%d' % (int(x['mop_id']))
                         mop_id = int(x['mop_id'])
                         mechanism = x['run_type']
@@ -59,13 +58,13 @@ class IronManager(threading.Thread):
                         if dict_schedule.get(key_mop, None) is not None:
                             pass
                         else:
+                            stringhelpers.info("IRONMAN RUNNING MOP: " + str(x['mop_id']), "\n")
                             list_time.append(run_time)
                             _sub_mops = x.get('sub_mops', None)
                             dict_schedule[key_mop] = key_mop
                             schedule = Schedule("SCHEDULE-%d" % (mop_id), x, _sub_mops,  dict_schedule, False,
                                                 mechanism, mop_id, queue_discovery, x['output_mapping'])
                             schedule.start()
-                            time.sleep(2)
             except Exception as e:
                 stringhelpers.print_bold("IRONMAN SCHEDULE [ERROR]: " + str(e), "\n")
 

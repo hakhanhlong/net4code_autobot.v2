@@ -16,7 +16,7 @@ class IronQueue(threading.Thread):
                     discovery = self.queue.get()
                     discovery.start()
                     discovery.join()
-                time.sleep(1) # delay 1s
+                time.sleep(0.3) # delay 1s
         except Exception as error:
             stringhelpers.err("ERROR [IRONQUEUE]: {}".format(error))
 

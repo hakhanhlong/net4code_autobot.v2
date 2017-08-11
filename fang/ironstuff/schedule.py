@@ -28,6 +28,7 @@ class Schedule(threading.Thread):
         self.mop_id = mop_id
         self.queue = queue
         self.output_mapping = output_mapping
+        self.database_mop = dict()
 
 
     def run(self):
@@ -61,6 +62,7 @@ class Schedule(threading.Thread):
                         self.queue.put(irondiscovery)
                         arr_manager_discovery.append(irondiscovery)
                         count_number = count_number + 1
+                        stringhelpers.info('\n[IRON][DISCOVERY][RUNNING][MOP_ID: %s][SUB_MOP_NAME: %s]' % (str(self.mop_id), sub_mop_item['name']))
 
 
                     if self.mechanism.upper() == 'MANUAL':
@@ -79,16 +81,24 @@ class Schedule(threading.Thread):
                                         count = count + 1
                                 if count == len(arr_manager_discovery):
 
-                                    #----------------------------- get detail sub mop -------------------------------------------------------------
-                                    self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
-                                    _mop_details = self._request.get().json()
+
+                                    _mop_details = self.database_mop.get(str(self.mop_id), None)
+                                    if _mop_details is None:
+                                        #----------------------------- get detail sub mop --------------------------------------------------------------------
+                                        self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
+                                        _mop_details = self._request.get().json()
+                                        self.database_mop[str(self.mop_id)] = _mop_details
+
                                     sub_mops = _mop_details.get('sub_mops', None)
                                     if sub_mops is not None:
                                         self.sub_mops = sub_mops
+                                        stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
                                     #--------------------------------------------------------------------------------------------------------------
                                     stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
-                                    time.sleep(int(self.mop_data['return_after']) * 60)
+                                    stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
+                                    #time.sleep(int(self.mop_data['return_after']) * 60)
                                     #time.sleep(2 * 60)
+                                    arr_manager_discovery = []
                                     break
                 except Exception as _exError:
                     stringhelpers.err("[ERROR] %s" % (_exError))

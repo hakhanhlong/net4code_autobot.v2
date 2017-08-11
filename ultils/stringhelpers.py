@@ -133,3 +133,12 @@ def remove_duplicates(values):
             if dup == out:
                 output.remove(dup)
     return output
+
+import time
+import sys
+def countdown(t):
+    for remaining in range(t, 0, -1):
+        sys.stdout.write("\r")
+        sys.stdout.write("{:2d} seconds remaining.".format(remaining))
+        sys.stdout.flush()
+        time.sleep(1)
