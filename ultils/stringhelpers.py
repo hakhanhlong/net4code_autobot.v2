@@ -72,6 +72,8 @@ def list_string_between(source, start = None, end = None):
 def string_between(source, start, end):
     try:
         result = source[source.find(start) + len(start):source.rfind(end)]
+        if end == '':
+            result = source[source.find(start) + len(start):len(source)]
         return result
     except ValueError:
         return None
