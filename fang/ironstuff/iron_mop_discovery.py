@@ -709,8 +709,11 @@ class Action(threading.Thread):
                         _error_field, self.name)
                     stringhelpers.err(_strError)
 
-
+                result_fang_original = result_fang
                 filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
+                if filter_result_fang is None or filter_result_fang is '':
+                    filter_result_fang = stringhelpers.string_between(result_fang_original, start_by, end_by)
+
                 #filter_result_fang = stringhelpers.find_between_r(result_fang, start_by, end_by)
                 if filter_result_fang is not None and filter_result_fang is not '':
                     dict_parsing_field[str(field_name)] = filter_result_fang
