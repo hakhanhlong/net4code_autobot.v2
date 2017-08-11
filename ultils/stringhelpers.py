@@ -83,7 +83,15 @@ def find_between( s, first, last ):
     try:
         start = s.index( first ) + len( first )
         end = s.index( last, start )
-        return s[start:end]
+        result =  s[start:end]
+
+        if result == '' or result == None:
+            if last == '':
+                end = len(s)
+                result = s[start:end]
+
+        return result
+
     except Exception:
         return None
 
