@@ -19,6 +19,10 @@ class NetworkObjectImpl():
         s = NetworkObject.objects(__raw__={'device_id':device_id, str(field_name):str(field_value), 'table': table, 'is_merge': True}).first()
         return s
 
+    def get_field_first_loop(self, device_id = 0, table = None, field_name=None, field_value=None):
+        s = NetworkObject.objects(__raw__={'device_id':device_id, str(field_name):str(field_value), 'table': table}).first()
+        return s
+
     def delete(self, networkobject_id = 0):
         s = NetworkObject.objects(networkobject_id=networkobject_id).first()
         return s.delete()

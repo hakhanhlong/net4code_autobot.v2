@@ -740,7 +740,7 @@ class Action(threading.Thread):
 
             if is_process_insert:
                 netwkImpl = NetworkObjectImpl()
-                networkObj = netwkImpl.get_field_first(self.deviceid, self.table_name, key_loop_field, key_loop_value)
+                networkObj = netwkImpl.get_field_first_loop(self.deviceid, self.table_name, key_loop_field, key_loop_value)
                 if networkObj is not None:
                     for x_field_k, x_field_v  in dict_parsing_field.items():
                         networkObj[str(x_field_k)] = x_field_v
