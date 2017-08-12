@@ -689,10 +689,15 @@ class Action(threading.Thread):
                 if start_line is not None and end_line is not None:
                     if end_line == 'end_row' or end_line == '\\n':
                         end_line = '\n'
+                    result_fang = ''
                     for row_result in array_result_fang:
                         if start_line in row_result:
                             result_fang = row_result + end_line
-                            break;
+                            break
+                    else:
+                        if result_fang is '':
+                            return None
+
 
                     #result_fang = stringhelpers.find_between_keep_str_start(result_fang, start_line, end_line)
                 else:
