@@ -13,6 +13,7 @@ from database.impl.lldp_impl import LLDPImpl
 
 from datetime import datetime
 from time import time, sleep
+import json
 
 
 
@@ -683,6 +684,10 @@ class Action(threading.Thread):
         output_result[key] = dict()
         output_result[key]['output'] = []
         try:
+
+            if str(self.deviceid) == '2042':
+                test = "sfdsfd"
+
             dict_parsing_field = dict()
 
             key_loop_field = self.data_action.get('key_loop_field', None)
@@ -749,8 +754,8 @@ class Action(threading.Thread):
                             networkObj[str(x_field_k)] = x_field_v
                         networkObj.save()
                         stringhelpers.info_green(
-                            "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s]" % (
-                            str(self.deviceid), str(command_id)), "\n")
+                            "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
+                            str(self.deviceid), str(command_id), json.dumps(dict_parsing_field)), "\n")
                 else:
                     networkObj = netwkImpl.get_field_first_loop(self.deviceid, self.table_name, key_loop_field, key_loop_value)
                     if networkObj is not None:
@@ -758,7 +763,8 @@ class Action(threading.Thread):
                             networkObj[str(x_field_k)] = x_field_v
                         networkObj.save()
                         stringhelpers.info_green(
-                            "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
+                            "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
+                                str(self.deviceid), str(command_id), json.dumps(dict_parsing_field)), "\n")
 
             return output_result
 
@@ -906,13 +912,15 @@ class Action(threading.Thread):
                                                                                         string_table_name,
                                                                                         str(self.key_merge),
                                                                                         data_build[str(self.key_merge)])
+                                            dict_insert_into_merge = dict()
                                             if merge_item_first is not None:
                                                 for k, v in field_master.items():
                                                     merge_item_first[str(k)] = data_build[str(k)]
+                                                    dict_insert_into_merge[str(k)] = data_build[str(k)]
                                                 merge_item_first.save()
                                                 stringhelpers.info_green(
-                                                    "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (
-                                                    str(self.deviceid), str(command_id)), "\n")
+                                                    "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD][%s]" % (
+                                                    str(self.deviceid), str(command_id), json.dumps(dict_insert_into_merge)), "\n")
 
                                             else:
                                                 intf = netwImpl.save(**data_build)

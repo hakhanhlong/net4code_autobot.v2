@@ -33,6 +33,7 @@ class Schedule(threading.Thread):
 
     def run(self):
         try:
+            count_timesleep = 0
             #---------------------------- waiting time for time start ------------------------------------------------
             while self.is_waiting:
                 run_time = self.mop_data['run_datetime'].split("-")[1].strip()
@@ -80,7 +81,7 @@ class Schedule(threading.Thread):
                                     if discovery_item.done == True:
                                         count = count + 1
                                 if count == len(arr_manager_discovery):
-
+                                    count_timesleep = count_timesleep + 1
                                     #_mop_details = self.database_mop.get(str(self.mop_id), None)
                                     #if _mop_details is None:
                                     #    #----------------------------- get detail sub mop --------------------------------------------------------------------
@@ -92,13 +93,18 @@ class Schedule(threading.Thread):
 
                                     sub_mops = _mop_details.get('sub_mops', None)
                                     if sub_mops is not None:
+                                        if count_timesleep == 2:
+                                            del sub_mops[0]
+                                            #count_timesleep = 0
                                         self.sub_mops = sub_mops
                                         stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
                                     #--------------------------------------------------------------------------------------------------------------
                                     stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
-                                    stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
+                                    #stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
+                                    stringhelpers.countdown(60)
                                     #time.sleep(int(self.mop_data['return_after']) * 60)
                                     #time.sleep(2 * 60)
+
                                     break
                 except Exception as _exError:
                     stringhelpers.err("[ERROR] %s" % (_exError))
