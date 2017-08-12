@@ -81,12 +81,14 @@ class Schedule(threading.Thread):
                                         count = count + 1
                                 if count == len(arr_manager_discovery):
 
-                                    _mop_details = self.database_mop.get(str(self.mop_id), None)
-                                    if _mop_details is None:
-                                        #----------------------------- get detail sub mop --------------------------------------------------------------------
-                                        self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
-                                        _mop_details = self._request.get().json()
-                                        self.database_mop[str(self.mop_id)] = _mop_details
+                                    #_mop_details = self.database_mop.get(str(self.mop_id), None)
+                                    #if _mop_details is None:
+                                    #    #----------------------------- get detail sub mop --------------------------------------------------------------------
+                                    #    self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
+                                    #    _mop_details = self._request.get().json()
+                                    #    self.database_mop[str(self.mop_id)] = _mop_details
+                                    self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
+                                    _mop_details = self._request.get().json()
 
                                     sub_mops = _mop_details.get('sub_mops', None)
                                     if sub_mops is not None:

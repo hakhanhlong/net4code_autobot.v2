@@ -164,6 +164,7 @@ class SubTemplate(threading.Thread):
         self.submop_index = submop_index
 
 
+
     def excecute(self, data_fang):
 
         actions = data_fang.get('actions', None)
