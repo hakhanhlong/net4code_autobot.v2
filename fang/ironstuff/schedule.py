@@ -44,7 +44,6 @@ class Schedule(threading.Thread):
                 else:
                     stringhelpers.info('\n[IRON][DISCOVERY][START RUNNING TIME][%s]' % (str(self.mop_data['run_datetime'])))
             #-----------------------------------------------------------------------------------------------------------
-            arr_manager_discovery = []
             while not self.is_stop:
                 # -------------------- run device from mop -------------------------------------------------------------
                 key_mop = 'main_schedule_%d' % (int(self.mop_data['mop_id']))
@@ -54,6 +53,7 @@ class Schedule(threading.Thread):
                     table_name = tableImpl.get(table_id)['table_name']
                     key_merge = self.mop_data.get('key_merge', None);
                     count_number = 0
+                    arr_manager_discovery = []
                     for sub_mop_item in self.sub_mops:
                         irondiscovery = Iron_Mop_Discovery("IRONMAN-Thread-Template-%s" % (str(self.mop_id)),
                                                       sub_mop_item, {}, self.mop_id, table_name, self.output_mapping[str(count_number)],
@@ -81,7 +81,6 @@ class Schedule(threading.Thread):
                                         count = count + 1
                                 if count == len(arr_manager_discovery):
 
-
                                     _mop_details = self.database_mop.get(str(self.mop_id), None)
                                     if _mop_details is None:
                                         #----------------------------- get detail sub mop --------------------------------------------------------------------
@@ -95,10 +94,9 @@ class Schedule(threading.Thread):
                                         stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
                                     #--------------------------------------------------------------------------------------------------------------
                                     stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
-                                    stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
-                                    #time.sleep(int(self.mop_data['return_after']) * 60)
+                                    #stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
+                                    time.sleep(int(self.mop_data['return_after']) * 60)
                                     #time.sleep(2 * 60)
-                                    arr_manager_discovery = []
                                     break
                 except Exception as _exError:
                     stringhelpers.err("[ERROR] %s" % (_exError))
