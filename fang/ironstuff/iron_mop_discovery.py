@@ -122,10 +122,14 @@ class Iron_Mop_Discovery(threading.Thread):
                     device_fang['vendor_ios'] = "%s|%s" % (v['vendor'], v['os'])  # vendor+os = e.x: Cisco|ios-xr
                     info_fang['device'] = device_fang
                     dict_action = dict()
-                    for action in v['actions']:  # list actions
-                        count_step = count_step + 1  # step
-                        dict_action[str(count_step)] = action
-                    info_fang['actions'] = dict_action
+                    if len(v['actions']) > 0:
+                        for action in v['actions']:  # list actions
+                            count_step = count_step + 1  # step
+                            dict_action[str(count_step)] = action
+                        info_fang['actions'] = dict_action
+                    else:
+                        info_fang['actions'] = None
+
                     subtemplate['devices'].append(info_fang)
                 except Exception as _error:
                     stringhelpers.err("IRON MOP DISCOVERY BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error))
@@ -161,6 +165,13 @@ class SubTemplate(threading.Thread):
 
 
     def excecute(self, data_fang):
+
+        actions = data_fang.get('actions', None)
+        if actions is None:
+            stringhelpers.info('\n[IRON][DISCOVERY][ACTIONS IS NONE] %s' % (str(self.name)))
+            return None
+
+
 
         actions = sorted(data_fang['actions'].items(), reverse=False)  # get actions of each sub template # action contain linkedlist
         #--------------------- build info device fang ------------------------------------------------------------------
