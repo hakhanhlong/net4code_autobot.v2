@@ -181,7 +181,7 @@ class SubTemplate(threading.Thread):
             'username': username,
             'password': password,
             'port': port,
-            'timeout': 300
+            'timeout': 60
         }
         print("\nMEGA DISCOVERY FANG DEVICE: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
         fac = FactoryConnector(**parameters)
@@ -189,7 +189,11 @@ class SubTemplate(threading.Thread):
         fac = fac.execute_keep_alive(loginfo=log_output_file_name)
         if not fac.is_alive():
             print("CONNECT DEVICE: host=%s, port=%s, devicetype=%s FAIL\n\n" % (parameters['host'], parameters['port'], parameters['device_type']))
-            return None
+            fac = fac.execute_keep_alive(loginfo=log_output_file_name)
+            print("CONNECT DEVICE: host=%s, port=%s, devicetype=%s RE-CONNECTING\n\n" % (
+            parameters['host'], parameters['port'], parameters['device_type']))
+            if not fac.is_alive():
+                return None
         else:
             print("\nMEGA DISCOVERY CONNECTED DEVICE [SUCCESS]: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
         #---------------------------------------------------------------------------------------------------------------
