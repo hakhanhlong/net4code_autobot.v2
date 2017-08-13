@@ -55,6 +55,7 @@ class Schedule(threading.Thread):
                     key_merge = self.mop_data.get('key_merge', None);
                     count_number = 0
                     arr_manager_discovery = []
+
                     for sub_mop_item in self.sub_mops:
                         irondiscovery = Iron_Mop_Discovery("IRONMAN-Thread-Template-%s" % (str(self.mop_id)),
                                                       sub_mop_item, {}, self.mop_id, table_name, self.output_mapping[str(count_number)],
@@ -81,21 +82,18 @@ class Schedule(threading.Thread):
                                     if discovery_item.done == True:
                                         count = count + 1
                                 if count == len(arr_manager_discovery):
-                                    count_timesleep = count_timesleep + 1
-                                    #_mop_details = self.database_mop.get(str(self.mop_id), None)
-                                    #if _mop_details is None:
-                                    #    #----------------------------- get detail sub mop --------------------------------------------------------------------
-                                    #    self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
-                                    #    _mop_details = self._request.get().json()
-                                    #    self.database_mop[str(self.mop_id)] = _mop_details
-                                    self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
-                                    _mop_details = self._request.get().json()
+                                    #count_timesleep = count_timesleep + 1
+                                    _mop_details = self.database_mop.get(str(self.mop_id), None)
+                                    if _mop_details is None:
+                                        #----------------------------- get detail sub mop --------------------------------------------------------------------
+                                        self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
+                                        _mop_details = self._request.get().json()
+                                        self.database_mop[str(self.mop_id)] = _mop_details
+                                    #self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
+                                    #_mop_details = self._request.get().json()
 
                                     sub_mops = _mop_details.get('sub_mops', None)
                                     if sub_mops is not None:
-                                        if count_timesleep == 2:
-                                            del sub_mops[0]
-                                            #count_timesleep = 0
                                         self.sub_mops = sub_mops
                                         stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
                                     #--------------------------------------------------------------------------------------------------------------
@@ -106,6 +104,7 @@ class Schedule(threading.Thread):
                                     #time.sleep(2 * 60)
 
                                     break
+                                time.sleep(1)
                 except Exception as _exError:
                     stringhelpers.err("[ERROR] %s" % (_exError))
 

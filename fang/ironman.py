@@ -41,6 +41,7 @@ class IronManager(threading.Thread):
         while not self.is_stop:
             try:
                 self.counter = self.counter + 1
+                arr_schedule_manage = []
                 # -------------- IRONMAN RUN SCHEDULE ----------------------------------------------------------------
                 #stringhelpers.print_bold("IRONMAN SCHEDULE RUN NUMBER: " + str(self.counter), "\n")
                 # get current day name
@@ -64,11 +65,16 @@ class IronManager(threading.Thread):
                             dict_schedule[key_mop] = key_mop
                             schedule = Schedule("SCHEDULE-%d" % (mop_id), x, _sub_mops,  dict_schedule, False,
                                                 mechanism, mop_id, queue_discovery, x['output_mapping'])
-                            schedule.start()
+                            arr_schedule_manage.append(schedule)
+                if len(arr_schedule_manage) > 0:
+                    for schedule in arr_schedule_manage:
+                        schedule.start()
+                        time.sleep(0.5)
+
             except Exception as e:
                 stringhelpers.print_bold("IRONMAN SCHEDULE [ERROR]: " + str(e), "\n")
 
-            time.sleep(5)
+            time.sleep(60)
 
         # stop iron queue ----------------------------------------------------------------------------------------------
         _ironQueue.stop()

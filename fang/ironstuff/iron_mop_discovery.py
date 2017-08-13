@@ -39,6 +39,7 @@ class Iron_Mop_Discovery(threading.Thread):
         self.output_mapping = output_mapping
         self.key_merge = key_merge
         self.submop_index = submop_index
+        self.is_started  = False
 
 
     def update_mop_status(self, status, duration=None):
@@ -58,6 +59,7 @@ class Iron_Mop_Discovery(threading.Thread):
         self._request.put()
 
     def run(self):
+        self.is_started = True
         if self.info_fang is not None:
             #-----------------------------------------------------------------------------------------------------------
             count = 0
@@ -73,12 +75,10 @@ class Iron_Mop_Discovery(threading.Thread):
                 self.result_templates.append(dict_template)
                 count = count + 1
             # ----------------------------------------------------------------------------------------------------------
-            self.done = True
-
-
         else:
             stringhelpers.warn("[%s] MEGA TEMPLATE NOT DATA TO FANG\r\n" % (self.name))
 
+        self.done = True
 
     def buildinfo_subtemplates(self):
         data_fang = dict(subtemplates=[])
@@ -123,15 +123,14 @@ class Iron_Mop_Discovery(threading.Thread):
                     device_fang['vendor_ios'] = "%s|%s" % (v['vendor'], v['os'])  # vendor+os = e.x: Cisco|ios-xr
                     info_fang['device'] = device_fang
                     dict_action = dict()
-                    if len(v['actions']) > 0:
+                    if len(v['actions']) > 0: #check if actions is not empty
                         for action in v['actions']:  # list actions
                             count_step = count_step + 1  # step
                             dict_action[str(count_step)] = action
                         info_fang['actions'] = dict_action
+                        subtemplate['devices'].append(info_fang)
                     else:
                         info_fang['actions'] = None
-
-                    subtemplate['devices'].append(info_fang)
                 except Exception as _error:
                     stringhelpers.err("IRON MOP DISCOVERY BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error))
             if subtemplate is not None:
@@ -140,6 +139,11 @@ class Iron_Mop_Discovery(threading.Thread):
             pass
 
         return data_fang
+
+    def join(self):
+        threading.Thread.join(self)
+        return self.done
+
 
 
 
@@ -194,7 +198,7 @@ class SubTemplate(threading.Thread):
             'username': username,
             'password': password,
             'port': port,
-            'timeout': 60
+            'timeout': 10
         }
         print("\nMEGA DISCOVERY FANG DEVICE: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
         fac = FactoryConnector(**parameters)
@@ -416,9 +420,6 @@ class SubTemplate(threading.Thread):
                         except:
                             pass
                     #-------------------------------------------------------------------------------------------------------
-
-
-
         except Exception as exError:
             stringhelpers.err("[ERROR] RUN SUBTEMPLATE-[%s]: %s" % (self.name, exError))
 
@@ -1003,49 +1004,6 @@ class Action(threading.Thread):
                                     '[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (
                                         str(d), str(self.deviceid), str(command_id)), '\n\n')
                 # --------------------------------------------------------------------------------------------------------------
-
-                # ------------------- merge ----------------------------------------------------------------------------------------
-
-                '''if self.key_merge is not None:
-
-                    for data_field_item in data_field_master:
-                        interfaces_value_field = data_field_item.get(str(self.key_merge), None)
-                        if interfaces_value_field is not None:
-                            merge_item_first = netwImpl.get_field_first(self.deviceid, string_table_name,
-                                                                        str(self.key_merge),
-                                                                        interfaces_value_field)
-
-                            network_merge = netwImpl.get_field(self.deviceid, string_table_name,
-                                                               str(self.key_merge), interfaces_value_field)
-                            if len(network_merge) > 1:
-                                count = 0
-                                for merge in network_merge:
-                                    if count != 0:
-                                        stringhelpers.info_green(
-                                            "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s]" % (str(self.deviceid), str(command_id)), "\n")
-
-                                        for field_key,field_value  in field_master.items():
-                                            if field_value != str(self.key_merge):
-                                                merge_item_first[str(field_value)] = data_field_item[str(field_value)]
-
-                                        #for k, v in data_field_item.items():
-                                        #    if k != str(self.key_merge):
-                                        #        merge_item_first[str(k)] = v
-
-                                        merge.delete()
-                                    else:
-                                        if merge_item_first is None:
-                                            merge_item_first = merge
-                                    count = count + 1
-
-                                #if merge is not None:
-                                merge_item_first.modified = datetime.now()
-                                merge_item_first.is_merge = True
-                                merge_item_first.save()
-                else:
-                    stringhelpers.err('[KEY_MERGE NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
-                # --------------------------------------------------------------------------------------------------------------------------
-                '''
 
             else:
                 stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
