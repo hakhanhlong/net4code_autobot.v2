@@ -15,7 +15,7 @@ class IronQueue(threading.Thread):
                 if not self.queue.empty():
                     discovery = self.queue.get()
                     discovery.start()
-                    time.sleep(1)  # delay 1s
+                    time.sleep(2)  # delay 1s
                     stringhelpers.err("RUN %s by QUEUE\n" % (discovery.name))
                     done = discovery.join()
                 time.sleep(1) # delay 1s

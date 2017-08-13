@@ -403,11 +403,13 @@ class SubTemplate(threading.Thread):
                         if len(filnal_result) == 0:
                             _thread = threading.Thread(target=self.excecute, args=(device,))
                             _thread.start()
+                            sleep(0.3)
                             threading_array.append(_thread)
                         else:
                             if filnal_result[len(filnal_result) - 1] == True:
                                 _thread = threading.Thread(target=self.excecute, args=(device,))
                                 _thread.start()
+                                sleep(0.3)
                                 threading_array.append(_thread)
 
                     for x in threading_array:
@@ -686,9 +688,6 @@ class Action(threading.Thread):
         output_result[key]['output'] = []
         try:
 
-            if str(self.deviceid) == '2042':
-                test = "sfdsfd"
-
             dict_parsing_field = dict()
 
             key_loop_field = self.data_action.get('key_loop_field', None)
@@ -735,7 +734,6 @@ class Action(threading.Thread):
                     _strError = "[DISCOVERY][LOOP][ERROR][FIELD] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (_error_field, self.name)
                     stringhelpers.err(_strError)
 
-                result_fang_original = result_fang
                 filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
 
 
@@ -753,6 +751,8 @@ class Action(threading.Thread):
                     if networkObj is not None:
                         for x_field_k, x_field_v in dict_parsing_field.items():
                             networkObj[str(x_field_k)] = x_field_v
+                        #version
+                        networkObj['versions'].append(dict_parsing_field)
                         networkObj.save()
                         stringhelpers.info_green(
                             "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
@@ -762,6 +762,8 @@ class Action(threading.Thread):
                     if networkObj is not None:
                         for x_field_k, x_field_v  in dict_parsing_field.items():
                             networkObj[str(x_field_k)] = x_field_v
+                        #version
+                        networkObj['versions'].append(dict_parsing_field)
                         networkObj.save()
                         stringhelpers.info_green(
                             "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
@@ -918,6 +920,8 @@ class Action(threading.Thread):
                                                 for k, v in field_master.items():
                                                     merge_item_first[str(k)] = data_build[str(k)]
                                                     dict_insert_into_merge[str(k)] = data_build[str(k)]
+                                                #versions
+                                                merge_item_first['versions'].append(field_master)
                                                 merge_item_first.save()
                                                 stringhelpers.info_green(
                                                     "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD][%s]" % (
