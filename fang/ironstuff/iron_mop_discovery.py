@@ -749,10 +749,17 @@ class Action(threading.Thread):
                     networkObj = netwkImpl.get_field_first(self.deviceid, self.table_name, key_loop_field,
                                                                 key_loop_value)
                     if networkObj is not None:
+                        # version
+                        version_number = len(networkObj['versions']) - 1
+                        if version_number >= 0:
+                            versions = networkObj['versions'][version_number]
                         for x_field_k, x_field_v in dict_parsing_field.items():
                             networkObj[str(x_field_k)] = x_field_v
-                        #version
-                        networkObj['versions'].append(dict_parsing_field)
+                            # version
+                            if versions is not None or versions is not {}:
+                                versions[str(x_field_k)] = x_field_v
+
+                        networkObj['versions'].append(versions)
                         networkObj.save()
                         stringhelpers.info_green(
                             "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
@@ -760,10 +767,16 @@ class Action(threading.Thread):
                 else:
                     networkObj = netwkImpl.get_field_first_loop(self.deviceid, self.table_name, key_loop_field, key_loop_value)
                     if networkObj is not None:
+                        # version
+                        version_number = len(networkObj['versions']) - 1
+                        if version_number >= 0:
+                            versions = networkObj['versions'][version_number]
                         for x_field_k, x_field_v  in dict_parsing_field.items():
                             networkObj[str(x_field_k)] = x_field_v
-                        #version
-                        networkObj['versions'].append(dict_parsing_field)
+                            # version
+                            if versions is not None or versions is not {}:
+                                versions[str(x_field_k)] = x_field_v
+                        networkObj['versions'].append(versions)
                         networkObj.save()
                         stringhelpers.info_green(
                             "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
@@ -917,11 +930,16 @@ class Action(threading.Thread):
                                                                                         data_build[str(self.key_merge)])
                                             dict_insert_into_merge = dict()
                                             if merge_item_first is not None:
+                                                version_number = len(merge_item_first['versions']) - 1
+                                                if version_number >= 0:
+                                                    versions = merge_item_first['versions'][version_number]
                                                 for k, v in field_master.items():
                                                     merge_item_first[str(k)] = data_build[str(k)]
                                                     dict_insert_into_merge[str(k)] = data_build[str(k)]
+                                                    if versions is not None or versions is not {}:
+                                                        versions[str(k)] = data_build[str(k)]
                                                 #versions
-                                                merge_item_first['versions'].append(field_master)
+                                                merge_item_first['versions'].append(versions)
                                                 merge_item_first.save()
                                                 stringhelpers.info_green(
                                                     "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD][%s]" % (
