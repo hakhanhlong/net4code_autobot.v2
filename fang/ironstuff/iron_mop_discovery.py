@@ -13,6 +13,7 @@ from database.impl.lldp_impl import LLDPImpl
 
 from datetime import datetime
 from time import time, sleep
+from bson import json_util
 import json
 
 
@@ -21,7 +22,7 @@ import json
 class Iron_Mop_Discovery(threading.Thread):
     """ Thread instance each process template """
     def __init__(self,  name, sub_mop = None, dict_template = {}, mop_id = None, table_name=None, output_mapping=None,
-                 key_merge=None, submop_index=None):
+                 key_merge=None, submop_index=None, dict_version_container = None, len_submops = None):
         threading.Thread.__init__(self)
         self.name = name
         self.sub_mop = sub_mop
@@ -40,6 +41,8 @@ class Iron_Mop_Discovery(threading.Thread):
         self.key_merge = key_merge
         self.submop_index = submop_index
         self.is_started  = False
+        self.dict_version_container = dict_version_container
+        self.len_submops = len_submops
 
 
     def update_mop_status(self, status, duration=None):
@@ -67,7 +70,8 @@ class Iron_Mop_Discovery(threading.Thread):
                 sub_template_name = fang['sub_template_name']
                 #out_mapping = self.output_mapping.get(str(count), None)
                 subtemplate_thread = SubTemplate(sub_template_name, fang, False, self.result_templates, int(fang['mode']),
-                                                 self.table_name, self.output_mapping, self.key_merge, self.submop_index)
+                                                 self.table_name, self.output_mapping, self.key_merge, self.submop_index,
+                                                 self.dict_version_container, self.mop_id, self.len_submops)
                 self.update_mop_status('running')
                 subtemplate_thread.start()
                 dict_template = dict(sub_template_name = sub_template_name, state = subtemplate_thread.join(), fang=fang, mode=int(fang['mode']))
@@ -151,7 +155,8 @@ class Iron_Mop_Discovery(threading.Thread):
 class SubTemplate(threading.Thread):
     '''sub template'''
     def __init__(self, name, subtemplate=None, is_rollback=False, result_templates = None, mode = 0, table_name=None,
-                 output_mapping=None, key_merge=None, submop_index=None):
+                 output_mapping=None, key_merge=None, submop_index=None, dict_version_container=None, mop_id=None,
+                 len_submops=None):
         threading.Thread.__init__(self)
         self.subtemplate = subtemplate
         self.name = name
@@ -167,6 +172,10 @@ class SubTemplate(threading.Thread):
         self.output_mapping = output_mapping
         self.key_merge = key_merge
         self.submop_index = submop_index
+        self.dict_version_container = dict_version_container
+        self.mop_id = mop_id
+        self.len_submops = len_submops
+
 
 
 
@@ -261,7 +270,8 @@ class SubTemplate(threading.Thread):
                                                        fac, self.is_rollback,
                                                        log_output_file_name, deviceid=device['device_id'],
                                                        table_name = self.table_name, data_fields=data_fields, key_merge=self.key_merge,
-                                                       submop_index=self.submop_index)
+                                                       submop_index=self.submop_index,
+                                                       dict_version_container = self.dict_version_container,mop_id = self.mop_id, len_submops=self.len_submops)
 
                                 thread_action.start()
                                 result = thread_action.join()
@@ -282,7 +292,9 @@ class SubTemplate(threading.Thread):
                                                    fac, self.is_rollback, log_output_file_name,
                                                    deviceid=device['device_id'], table_name =self.table_name, data_fields = data_fields,
                                                    key_merge=self.key_merge,
-                                                   submop_index=self.submop_index)
+                                                   submop_index=self.submop_index,
+                                                   dict_version_container=self.dict_version_container,
+                                                   mop_id=self.mop_id, len_submops=self.len_submops)
                             thread_action.start()
                             result = thread_action.join()
                             result['action_id'] = action_id
@@ -435,7 +447,8 @@ class Action(threading.Thread):
     """ Thread instance each process mega """
     def __init__(self, name, data_action = None, action_id = None, params_action=None, param_rollback_action=None,
                  vendor_os=None, session_fang=None, is_rolback=False, file_log=None,
-                 deviceid=None, table_name=None, data_fields=None, key_merge=None, submop_index=None):
+                 deviceid=None, table_name=None, data_fields=None, key_merge=None, submop_index=None,
+                 dict_version_container=None, mop_id=None, len_submops=None):
         threading.Thread.__init__(self)
         self.name = name
         self.data_action = data_action
@@ -459,14 +472,14 @@ class Action(threading.Thread):
         self.dict_state_result = dict()
         self.deviceid = deviceid
 
-        self.dict_table_impl = {
-            'interfaces': InterfaceImpl,
-            'lldp': LLDPImpl
-        }
+
 
         self.table_name = table_name
         self.data_fields = data_fields
         self.key_merge = key_merge
+        self.dict_version_container = dict_version_container
+        self.mop_id = mop_id
+        self.len_submops=len_submops
 
 
 
@@ -650,6 +663,10 @@ class Action(threading.Thread):
             ###########################################################################################
 
             if command is not None:
+
+                if command == 'show lldp neighbor Et0/1 detail':
+                    test = ""
+
                 commands = [command]
                 #stringhelpers.info_green(command)
                 #result_fang = self.fang.get_output()
@@ -673,7 +690,7 @@ class Action(threading.Thread):
             else:
                 return None
         except Exception as e:
-            stringhelpers.err("[DISCOVERY] MEGA ACTION PROCESS EACH COMMAND ERROR %s | THREAD %s" % (e, self.name))
+            stringhelpers.err("[DISCOVERY] MEGA ACTION PROCESS EACH COMMAND ERROR %s | THREAD %s COMMAND %s" % (e, self.name, command))
             return None
         except ConnectionError as errConn:
             stringhelpers.err("[DISCOVERY] MEGA ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name))
@@ -744,22 +761,17 @@ class Action(threading.Thread):
 
             if is_process_insert:
                 netwkImpl = NetworkObjectImpl()
-
                 if self.key_merge is not None and self.submop_index == 0:
                     networkObj = netwkImpl.get_field_first(self.deviceid, self.table_name, key_loop_field,
                                                                 key_loop_value)
                     if networkObj is not None:
-                        # version
-                        version_number = len(networkObj['versions']) - 1
-                        if version_number >= 0:
-                            versions = networkObj['versions'][version_number]
                         for x_field_k, x_field_v in dict_parsing_field.items():
                             networkObj[str(x_field_k)] = x_field_v
-                            # version
-                            if versions is not None or versions is not {}:
-                                versions[str(x_field_k)] = x_field_v
-
-                        networkObj['versions'].append(versions)
+                            try:
+                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
+                            except: #dict_version_content = null
+                                self.dict_version_container[str(self.deviceid)] = dict()
+                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
                         networkObj.save()
                         stringhelpers.info_green(
                             "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
@@ -767,16 +779,15 @@ class Action(threading.Thread):
                 else:
                     networkObj = netwkImpl.get_field_first_loop(self.deviceid, self.table_name, key_loop_field, key_loop_value)
                     if networkObj is not None:
-                        # version
-                        version_number = len(networkObj['versions']) - 1
-                        if version_number >= 0:
-                            versions = networkObj['versions'][version_number]
                         for x_field_k, x_field_v  in dict_parsing_field.items():
                             networkObj[str(x_field_k)] = x_field_v
-                            # version
-                            if versions is not None or versions is not {}:
-                                versions[str(x_field_k)] = x_field_v
-                        networkObj['versions'].append(versions)
+                            try:
+                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
+                            except: #dict_version_content = null
+                                self.dict_version_container[str(self.deviceid)] = dict()
+                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
+                        if self.len_submops == self.submop_index:
+                            networkObj['versions'].append(self.dict_version_container[str(self.deviceid)])
                         networkObj.save()
                         stringhelpers.info_green(
                             "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
@@ -917,9 +928,11 @@ class Action(threading.Thread):
                                         array_network_id.append(intf.networkobject_id)
                                         netwImpl.update(**data_build)
                                     else: #not exist then insert
-                                        data_build['versions'].append(data_version)
+
                                         if self.key_merge is not None and self.submop_index == 0:
                                             data_build['is_merge'] = True
+                                            #the first time version
+                                            self.dict_version_container[str(self.deviceid)] = data_version
                                             intf = netwImpl.save(**data_build)
                                             array_network_id.append(intf.networkobject_id)
                                         elif self.key_merge is not None and self.submop_index > 0:
@@ -930,16 +943,19 @@ class Action(threading.Thread):
                                                                                         data_build[str(self.key_merge)])
                                             dict_insert_into_merge = dict()
                                             if merge_item_first is not None:
-                                                version_number = len(merge_item_first['versions']) - 1
-                                                if version_number >= 0:
-                                                    versions = merge_item_first['versions'][version_number]
+
                                                 for k, v in field_master.items():
                                                     merge_item_first[str(k)] = data_build[str(k)]
                                                     dict_insert_into_merge[str(k)] = data_build[str(k)]
-                                                    if versions is not None or versions is not {}:
-                                                        versions[str(k)] = data_build[str(k)]
-                                                #versions
-                                                merge_item_first['versions'].append(versions)
+
+                                                    self.dict_version_container[str(self.deviceid)][str(k)] = data_build[str(k)]
+                                                    try:
+                                                        self.dict_version_container[str(self.deviceid)][str(k)] = data_build[str(k)]
+                                                    except:  # dict_version_content = null
+                                                        self.dict_version_container[str(self.deviceid)] = dict()
+                                                        self.dict_version_container[str(self.deviceid)][str(k)] = \
+                                                        data_build[str(k)]
+
                                                 merge_item_first.save()
                                                 stringhelpers.info_green(
                                                     "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD][%s]" % (
@@ -949,6 +965,7 @@ class Action(threading.Thread):
                                                 intf = netwImpl.save(**data_build)
                                                 array_network_id.append(intf.networkobject_id)
                                         else:
+                                            data_build['versions'].append(data_version)
                                             #insert nhu binh thuong
                                             intf = netwImpl.save(**data_build)
                                             array_network_id.append(intf.networkobject_id)
