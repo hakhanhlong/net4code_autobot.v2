@@ -34,6 +34,7 @@ class Schedule(threading.Thread):
     def run(self):
         try:
             count_timesleep = 0
+            dict_version_container = dict()
             #---------------------------- waiting time for time start ------------------------------------------------
             while self.is_waiting:
                 run_time = self.mop_data['run_datetime'].split("-")[1].strip()
@@ -55,7 +56,7 @@ class Schedule(threading.Thread):
                     key_merge = self.mop_data.get('key_merge', None);
                     count_number = 0
                     arr_manager_discovery = []
-                    dict_version_container = dict()
+
 
                     len_submops = len(self.sub_mops) - 1
                     for sub_mop_item in self.sub_mops:
@@ -100,8 +101,8 @@ class Schedule(threading.Thread):
                                         stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
                                     #--------------------------------------------------------------------------------------------------------------
                                     stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
-                                    #stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
-                                    stringhelpers.countdown(60)
+                                    stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
+                                    #stringhelpers.countdown(60)
                                     #time.sleep(int(self.mop_data['return_after']) * 60)
                                     #time.sleep(2 * 60)
 

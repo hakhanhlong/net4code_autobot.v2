@@ -661,12 +661,9 @@ class Action(threading.Thread):
             ################### process args for command ##############################################
             command = self.data_command['command']
             ###########################################################################################
-
+            if command == 'show interface Et1/3':
+                test = ''
             if command is not None:
-
-                if command == 'show lldp neighbor Et0/1 detail':
-                    test = ""
-
                 commands = [command]
                 #stringhelpers.info_green(command)
                 #result_fang = self.fang.get_output()
@@ -713,6 +710,8 @@ class Action(threading.Thread):
 
             array_result_fang = stringhelpers.text_to_arrayrow(result_fang)
 
+
+
             for x_command in self.data_command['output']:
 
                 start_line = x_command.get('start_line', None)
@@ -724,40 +723,38 @@ class Action(threading.Thread):
                 if end_by == 'end_row' or end_by == '\\n':
                     end_by = '\n'
 
+                result_fang = ''
                 if start_line is not None and end_line is not None:
                     if end_line == 'end_row' or end_line == '\\n':
                         end_line = '\n'
-                    result_fang = ''
                     for row_result in array_result_fang:
                         if start_line in row_result:
                             result_fang = row_result + end_line
                             break
                     else:
                         if result_fang is '':
-                            return None
-
-
+                            _strError = "[DISCOVERY][LOOP][ERROR][START_LINE][ON_ROW][RESULT = NULL] " \
+                                        "START_LINE = %s|MOPID:%s|DEVICE ID:%s |COMMAND ID: %s|COMMAND:%s| THREAD %s" % \
+                                        (start_line, str(self.mop_id), str(self.deviceid), str(command_id),commandtext,self.name)
+                            stringhelpers.err(_strError)
                     #result_fang = stringhelpers.find_between_keep_str_start(result_fang, start_line, end_line)
-                else:
-                    return None
 
-                try:
-                    field_name = x_command.get('name', None)
-                    field_name = self.data_fields[str(command_id)].get(field_name, None)
-                    if field_name is None:
-                        field_name = field_name.lower()
+                if result_fang is not '':
+                    try:
+                        field_name = x_command.get('name', None)
                         field_name = self.data_fields[str(command_id)].get(field_name, None)
-                except Exception as _error_field:
-                    _strError = "[DISCOVERY][LOOP][ERROR][FIELD] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (_error_field, self.name)
-                    stringhelpers.err(_strError)
+                        if field_name is None:
+                            field_name = field_name.lower()
+                            field_name = self.data_fields[str(command_id)].get(field_name, None)
+                    except Exception as _error_field:
+                        _strError = "[DISCOVERY][LOOP][ERROR][FIELD] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (_error_field, self.name)
+                        stringhelpers.err(_strError)
 
-                filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
+                    filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
 
-
-                #filter_result_fang = stringhelpers.find_between_r(result_fang, start_by, end_by)
-                if filter_result_fang is not None and filter_result_fang is not '':
-                    dict_parsing_field[str(field_name)] = filter_result_fang
-                    is_process_insert = True
+                    if filter_result_fang is not None and filter_result_fang is not '':
+                        dict_parsing_field[str(field_name)] = filter_result_fang
+                        is_process_insert = True
 
             if is_process_insert:
                 netwkImpl = NetworkObjectImpl()
@@ -767,11 +764,11 @@ class Action(threading.Thread):
                     if networkObj is not None:
                         for x_field_k, x_field_v in dict_parsing_field.items():
                             networkObj[str(x_field_k)] = x_field_v
-                            try:
+                            '''try:
                                 self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
                             except: #dict_version_content = null
                                 self.dict_version_container[str(self.deviceid)] = dict()
-                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
+                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v'''
                         networkObj.save()
                         stringhelpers.info_green(
                             "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
@@ -781,13 +778,21 @@ class Action(threading.Thread):
                     if networkObj is not None:
                         for x_field_k, x_field_v  in dict_parsing_field.items():
                             networkObj[str(x_field_k)] = x_field_v
-                            try:
+                            '''try:
                                 self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
                             except: #dict_version_content = null
                                 self.dict_version_container[str(self.deviceid)] = dict()
-                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
+                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v'''
+
                         if self.len_submops == self.submop_index:
-                            networkObj['versions'].append(self.dict_version_container[str(self.deviceid)])
+                            dict_version = dict()
+                            dict_db = json.loads(networkObj.to_json())
+                            for k, v in dict_db.items():
+                                if k not in ['_id', 'versions', 'data', 'row','column','command_id','created',
+                                             'device_id', 'is_merge', 'modified', 'networkobject_id', 'row', 'table', 'versions']:
+                                    dict_version[str(k)] = v
+                            dict_version['modifieddate'] = datetime.now()
+                            networkObj['versions'].append(dict_version)
                         networkObj.save()
                         stringhelpers.info_green(
                             "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
@@ -921,10 +926,10 @@ class Action(threading.Thread):
                                     intf = netwImpl.get(self.deviceid, string_table_name, index_column, row_count, command_id)
 
                                     if intf: #exist interfaces then update
-                                        versions = intf['versions']
-                                        if versions is not None:
-                                            versions.append(data_version)
-                                            data_build['versions'] = versions
+                                        #versions = intf['versions']
+                                        #if versions is not None:
+                                        #    versions.append(data_version)
+                                        #    data_build['versions'] = versions
                                         array_network_id.append(intf.networkobject_id)
                                         netwImpl.update(**data_build)
                                     else: #not exist then insert
@@ -932,7 +937,12 @@ class Action(threading.Thread):
                                         if self.key_merge is not None and self.submop_index == 0:
                                             data_build['is_merge'] = True
                                             #the first time version
-                                            self.dict_version_container[str(self.deviceid)] = data_version
+                                            '''try:
+                                                self.dict_version_container[str(self.deviceid)] = data_version
+                                            except:
+                                                self.dict_version_container[str(self.deviceid)] = dict()
+                                                self.dict_version_container[str(self.deviceid)] = data_version'''
+
                                             intf = netwImpl.save(**data_build)
                                             array_network_id.append(intf.networkobject_id)
                                         elif self.key_merge is not None and self.submop_index > 0:
@@ -948,13 +958,13 @@ class Action(threading.Thread):
                                                     merge_item_first[str(k)] = data_build[str(k)]
                                                     dict_insert_into_merge[str(k)] = data_build[str(k)]
 
-                                                    self.dict_version_container[str(self.deviceid)][str(k)] = data_build[str(k)]
+                                                    '''self.dict_version_container[str(self.deviceid)][str(k)] = data_build[str(k)]
                                                     try:
                                                         self.dict_version_container[str(self.deviceid)][str(k)] = data_build[str(k)]
                                                     except:  # dict_version_content = null
                                                         self.dict_version_container[str(self.deviceid)] = dict()
                                                         self.dict_version_container[str(self.deviceid)][str(k)] = \
-                                                        data_build[str(k)]
+                                                        data_build[str(k)]'''
 
                                                 merge_item_first.save()
                                                 stringhelpers.info_green(
