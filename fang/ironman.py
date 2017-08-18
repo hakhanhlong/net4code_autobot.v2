@@ -71,8 +71,7 @@ class IronManager(threading.Thread):
                 if len(arr_schedule_manage) > 0:
                     for schedule in arr_schedule_manage:
                         schedule.start()
-                        time.sleep(0.5)
-
+                    arr_schedule_manage.clear()
             except Exception as e:
                 stringhelpers.print_bold("IRONMAN SCHEDULE [ERROR]: " + str(e), "\n")
 
