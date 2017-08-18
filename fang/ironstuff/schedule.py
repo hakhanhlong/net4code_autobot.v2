@@ -29,6 +29,7 @@ class Schedule(threading.Thread):
         self.queue = queue
         self.output_mapping = output_mapping
         self.database_mop = dict()
+        self.trying_waiting_done = 1000
 
 
     def run(self):
@@ -67,7 +68,7 @@ class Schedule(threading.Thread):
                         self.queue.put(irondiscovery)
                         arr_manager_discovery.append(irondiscovery)
                         count_number = count_number + 1
-                        stringhelpers.info('\n[IRON][DISCOVERY][RUNNING][MOP_ID: %s][SUB_MOP_NAME: %s]' % (str(self.mop_id), sub_mop_item['name']))
+                        stringhelpers.info('\n[ENQUEUE] - > [IRON][DISCOVERY][RUNNING][MOP_ID: %s][SUB_MOP_NAME: %s]' % (str(self.mop_id), sub_mop_item['name']))
 
 
                     if self.mechanism.upper() == 'MANUAL':
@@ -81,17 +82,19 @@ class Schedule(threading.Thread):
                         else:
                             while True:
                                 count = 0
+                                count_trying_waiting = 0
                                 for discovery_item in arr_manager_discovery:
                                     if discovery_item.done == True:
                                         count = count + 1
+                                    time.sleep(0.2)
                                 if count == len(arr_manager_discovery):
                                     #count_timesleep = count_timesleep + 1
-                                    _mop_details = self.database_mop.get(str(self.mop_id), None)
-                                    if _mop_details is None:
+                                    #_mop_details = self.database_mop.get(str(self.mop_id), None)
+                                    #if _mop_details is None:
                                         #----------------------------- get detail sub mop --------------------------------------------------------------------
-                                        self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
-                                        _mop_details = self._request.get().json()
-                                        self.database_mop[str(self.mop_id)] = _mop_details
+                                    self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
+                                    _mop_details = self._request.get().json()
+                                    #    self.database_mop[str(self.mop_id)] = _mop_details
                                     #self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
                                     #_mop_details = self._request.get().json()
 
@@ -101,8 +104,8 @@ class Schedule(threading.Thread):
                                         stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
                                     #--------------------------------------------------------------------------------------------------------------
                                     stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
-                                    stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
-                                    #stringhelpers.countdown(60)
+                                    #stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
+                                    stringhelpers.countdown(60)
                                     #time.sleep(int(self.mop_data['return_after']) * 60)
                                     #time.sleep(2 * 60)
 

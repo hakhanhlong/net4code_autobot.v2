@@ -12,11 +12,11 @@ class NetworkObjectImpl():
         return s
 
     def get_field(self, device_id = 0, table = None, field_name=None, field_value=None):
-        s = NetworkObject.objects(__raw__={'device_id':device_id, str(field_name):str(field_value), 'table': table})
+        s = NetworkObject.objects(__raw__={'device_id':device_id, str(field_name):str(field_value).strip(), 'table': table})
         return s
 
     def get_field_first(self, device_id = 0, table = None, field_name=None, field_value=None):
-        s = NetworkObject.objects(__raw__={'device_id':device_id, str(field_name):str(field_value), 'table': table, 'is_merge': True}).first()
+        s = NetworkObject.objects(__raw__={'device_id':device_id, str(field_name):str(field_value).strip(), 'table': table, 'is_merge': True}).first()
         return s
 
     def get_field_first_loop(self, device_id = 0, table = None, field_name=None, field_value=None):

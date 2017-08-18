@@ -425,6 +425,7 @@ class SubTemplate(threading.Thread):
                                 threading_array.append(_thread)
 
                     for x in threading_array:
+                        sleep(0.3)
                         x.join()
 
                     for device in self.subtemplate['devices']:
@@ -661,7 +662,7 @@ class Action(threading.Thread):
             ################### process args for command ##############################################
             command = self.data_command['command']
             ###########################################################################################
-            if command == 'show interface Et1/3':
+            if command == 'show interface Et0/3':
                 test = ''
             if command is not None:
                 commands = [command]
@@ -701,6 +702,8 @@ class Action(threading.Thread):
         output_result[key] = dict()
         output_result[key]['output'] = []
         try:
+
+
 
             dict_parsing_field = dict()
 
@@ -758,45 +761,30 @@ class Action(threading.Thread):
 
             if is_process_insert:
                 netwkImpl = NetworkObjectImpl()
-                if self.key_merge is not None and self.submop_index == 0:
+                networkObj = None
+                if self.key_merge is not None:
                     networkObj = netwkImpl.get_field_first(self.deviceid, self.table_name, key_loop_field,
-                                                                key_loop_value)
-                    if networkObj is not None:
-                        for x_field_k, x_field_v in dict_parsing_field.items():
-                            networkObj[str(x_field_k)] = x_field_v
-                            '''try:
-                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
-                            except: #dict_version_content = null
-                                self.dict_version_container[str(self.deviceid)] = dict()
-                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v'''
-                        networkObj.save()
-                        stringhelpers.info_green(
-                            "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
-                            str(self.deviceid), str(command_id), json.dumps(dict_parsing_field)), "\n")
+                                                           key_loop_value)
                 else:
-                    networkObj = netwkImpl.get_field_first_loop(self.deviceid, self.table_name, key_loop_field, key_loop_value)
-                    if networkObj is not None:
-                        for x_field_k, x_field_v  in dict_parsing_field.items():
-                            networkObj[str(x_field_k)] = x_field_v
-                            '''try:
-                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v
-                            except: #dict_version_content = null
-                                self.dict_version_container[str(self.deviceid)] = dict()
-                                self.dict_version_container[str(self.deviceid)][str(x_field_k)] = x_field_v'''
+                    networkObj = netwkImpl.get_field_first_loop(self.deviceid, self.table_name, key_loop_field,
+                                                                key_loop_value)
+                if networkObj is not None:
+                    for x_field_k, x_field_v  in dict_parsing_field.items():
+                        networkObj[str(x_field_k)] = x_field_v
 
-                        if self.len_submops == self.submop_index:
-                            dict_version = dict()
-                            dict_db = json.loads(networkObj.to_json())
-                            for k, v in dict_db.items():
-                                if k not in ['_id', 'versions', 'data', 'row','column','command_id','created',
-                                             'device_id', 'is_merge', 'modified', 'networkobject_id', 'row', 'table', 'versions']:
-                                    dict_version[str(k)] = v
-                            dict_version['modifieddate'] = datetime.now()
-                            networkObj['versions'].append(dict_version)
-                        networkObj.save()
-                        stringhelpers.info_green(
-                            "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (
-                                str(self.deviceid), str(command_id), json.dumps(dict_parsing_field)), "\n")
+                    if self.len_submops == self.submop_index:
+                        dict_version = dict()
+                        dict_db = json.loads(networkObj.to_json())
+                        for k, v in dict_db.items():
+                            if k not in ['_id', 'versions', 'data', 'row','column','command_id','created',
+                                         'device_id', 'is_merge', 'modified', 'networkobject_id', 'row', 'table', 'versions']:
+                                dict_version[str(k)] = v
+                        dict_version['modifieddate'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S") #convert to json available
+                        networkObj['versions'].append(dict_version)
+                        stringhelpers.info('\n[VERSION][NETWORKOBJECT_ID] %s' % (json.dumps(dict_version)))
+                    networkObj.save()
+                    stringhelpers.info_green(
+                        "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (str(self.deviceid), str(command_id), json.dumps(dict_parsing_field)), "\n")
 
             return output_result
 
@@ -942,7 +930,6 @@ class Action(threading.Thread):
                                             except:
                                                 self.dict_version_container[str(self.deviceid)] = dict()
                                                 self.dict_version_container[str(self.deviceid)] = data_version'''
-
                                             intf = netwImpl.save(**data_build)
                                             array_network_id.append(intf.networkobject_id)
                                         elif self.key_merge is not None and self.submop_index > 0:
@@ -957,14 +944,6 @@ class Action(threading.Thread):
                                                 for k, v in field_master.items():
                                                     merge_item_first[str(k)] = data_build[str(k)]
                                                     dict_insert_into_merge[str(k)] = data_build[str(k)]
-
-                                                    '''self.dict_version_container[str(self.deviceid)][str(k)] = data_build[str(k)]
-                                                    try:
-                                                        self.dict_version_container[str(self.deviceid)][str(k)] = data_build[str(k)]
-                                                    except:  # dict_version_content = null
-                                                        self.dict_version_container[str(self.deviceid)] = dict()
-                                                        self.dict_version_container[str(self.deviceid)][str(k)] = \
-                                                        data_build[str(k)]'''
 
                                                 merge_item_first.save()
                                                 stringhelpers.info_green(
