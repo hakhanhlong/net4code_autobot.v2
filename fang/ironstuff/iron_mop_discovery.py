@@ -761,7 +761,6 @@ class Action(threading.Thread):
 
             if is_process_insert:
                 netwkImpl = NetworkObjectImpl()
-                networkObj = None
                 if self.key_merge is not None:
                     networkObj = netwkImpl.get_field_first(self.deviceid, self.table_name, key_loop_field,
                                                            key_loop_value)
@@ -771,6 +770,7 @@ class Action(threading.Thread):
                 if networkObj is not None:
                     for x_field_k, x_field_v  in dict_parsing_field.items():
                         networkObj[str(x_field_k)] = x_field_v
+
 
                     if self.len_submops == self.submop_index:
                         dict_version = dict()
@@ -782,6 +782,7 @@ class Action(threading.Thread):
                         dict_version['modifieddate'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S") #convert to json available
                         networkObj['versions'].append(dict_version)
                         stringhelpers.info('\n[VERSION][NETWORKOBJECT_ID] %s' % (json.dumps(dict_version)))
+
                     networkObj.save()
                     stringhelpers.info_green(
                         "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (str(self.deviceid), str(command_id), json.dumps(dict_parsing_field)), "\n")
@@ -914,12 +915,17 @@ class Action(threading.Thread):
                                     intf = netwImpl.get(self.deviceid, string_table_name, index_column, row_count, command_id)
 
                                     if intf: #exist interfaces then update
-                                        #versions = intf['versions']
-                                        #if versions is not None:
-                                        #    versions.append(data_version)
-                                        #    data_build['versions'] = versions
+
+                                        versions = intf['versions']
+                                        if versions is not None:
+                                            data_build['versions'] = versions
                                         array_network_id.append(intf.networkobject_id)
                                         netwImpl.update(**data_build)
+
+
+
+
+
                                     else: #not exist then insert
 
                                         if self.key_merge is not None and self.submop_index == 0:
@@ -930,6 +936,9 @@ class Action(threading.Thread):
                                             except:
                                                 self.dict_version_container[str(self.deviceid)] = dict()
                                                 self.dict_version_container[str(self.deviceid)] = data_version'''
+
+                                            data_build['versions'] = []
+
                                             intf = netwImpl.save(**data_build)
                                             array_network_id.append(intf.networkobject_id)
                                         elif self.key_merge is not None and self.submop_index > 0:

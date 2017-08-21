@@ -64,6 +64,7 @@ class IronManager(threading.Thread):
                             _sub_mops = x.get('sub_mops', None)
                             dict_schedule[key_mop] = key_mop
 
+                            #if str(x['mop_id']) == '10':
                             schedule = Schedule("SCHEDULE-%d" % (mop_id), x, _sub_mops,  dict_schedule, False,
                                                 mechanism, mop_id, queue_discovery, x['output_mapping'])
                             arr_schedule_manage.append(schedule)

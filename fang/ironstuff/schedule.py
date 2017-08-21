@@ -61,9 +61,12 @@ class Schedule(threading.Thread):
 
                     len_submops = len(self.sub_mops) - 1
                     for sub_mop_item in self.sub_mops:
+
+                        sub_no = int(sub_mop_item.get('subNo', 0))
+
                         irondiscovery = Iron_Mop_Discovery("IRONMAN-Thread-Template-%s" % (str(self.mop_id)),
-                                                      sub_mop_item, {}, self.mop_id, table_name, self.output_mapping[str(count_number)],
-                                                      key_merge, count_number, dict_version_container, len_submops)
+                                                      sub_mop_item, {}, self.mop_id, table_name, self.output_mapping[str(sub_no)],
+                                                      key_merge, sub_no, dict_version_container, len_submops)
                         # insert to queue discovery
                         self.queue.put(irondiscovery)
                         arr_manager_discovery.append(irondiscovery)
