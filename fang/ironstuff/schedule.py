@@ -107,8 +107,8 @@ class Schedule(threading.Thread):
                                         stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
                                     #--------------------------------------------------------------------------------------------------------------
                                     stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
-                                    #stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
-                                    stringhelpers.countdown(60)
+                                    stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
+                                    #stringhelpers.countdown(60)
                                     #time.sleep(int(self.mop_data['return_after']) * 60)
                                     #time.sleep(2 * 60)
 
