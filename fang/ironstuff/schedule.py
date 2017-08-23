@@ -71,7 +71,7 @@ class Schedule(threading.Thread):
                         self.queue.put(irondiscovery)
                         arr_manager_discovery.append(irondiscovery)
                         count_number = count_number + 1
-                        stringhelpers.info('\n[ENQUEUE] - > [IRON][DISCOVERY][RUNNING][MOP_ID: %s][SUB_MOP_NAME: %s]' % (str(self.mop_id), sub_mop_item['name']))
+                        stringhelpers.info('\n[ENQUEUE] - > [IRON][DISCOVERY][MOP_ID: %s][SUB_MOP_NAME: %s]' % (str(self.mop_id), sub_mop_item['name']))
 
 
                     if self.mechanism.upper() == 'MANUAL':

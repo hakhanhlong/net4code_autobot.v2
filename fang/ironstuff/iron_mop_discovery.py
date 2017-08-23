@@ -238,6 +238,11 @@ class SubTemplate(threading.Thread):
             compare_final_output = []
             previous_final_output = []
 
+
+            #if str(device['device_id']) == '2017' and self.submop_index == 3:
+            #    test = "longhk"
+
+
             for step  in _array_step:
                 # print(_dict_list_actions[step])
                 _action = _dict_list_actions[str(step)]
@@ -258,7 +263,8 @@ class SubTemplate(threading.Thread):
                     try:
                         thread_action_name = "Thread-Action_%s-In-%s" % (action_id, self.name)
                         action_data = _action
-                        dependency = int(_action['dependency'])
+                        #dependency = int(_action['dependency'])
+                        '''
                         if dependency > 0:  # run need compare
                             dependStep = dependency
                             if (int(_action['condition']) == int(previous_final_output[dependStep - 1])):
@@ -313,6 +319,27 @@ class SubTemplate(threading.Thread):
                                     self.dict_state_result[str(device['device_id'])]["final_sub_template"] = False
                                     compare_final_output = []
                                     break
+                        '''
+                        thread_action = Action(thread_action_name, action_data, action_id, None,
+                                               None, vendor_ios,
+                                               fac, self.is_rollback, log_output_file_name,
+                                               deviceid=device['device_id'], table_name=self.table_name,
+                                               data_fields=data_fields,
+                                               key_merge=self.key_merge,
+                                               submop_index=self.submop_index,
+                                               dict_version_container=self.dict_version_container,
+                                               mop_id=self.mop_id, len_submops=self.len_submops)
+                        thread_action.start()
+                        result = thread_action.join()
+                        result['action_id'] = action_id
+
+                        result['device_id'] = device['device_id']
+                        result['device_vendor_ios'] = vendor_ios
+
+                        previous_final_output.append(True)
+
+                        self.array_state_action.append(result)
+
                     except:
                         stringhelpers.warn("[%s] MEGA TEMPLATE REQUEST DATA ACTION %s FAIL\r\n" % (self.name, action_id))
                 else:  # last command in actions check point
@@ -427,6 +454,7 @@ class SubTemplate(threading.Thread):
                     for x in threading_array:
                         sleep(0.3)
                         x.join()
+                    threading_array = []
 
                     for device in self.subtemplate['devices']:
                         device_id = device['device']['device_info']['device_id']
@@ -771,7 +799,6 @@ class Action(threading.Thread):
                     for x_field_k, x_field_v  in dict_parsing_field.items():
                         networkObj[str(x_field_k)] = x_field_v
 
-
                     if self.len_submops == self.submop_index:
                         dict_version = dict()
                         dict_db = json.loads(networkObj.to_json())
@@ -781,12 +808,12 @@ class Action(threading.Thread):
                                 dict_version[str(k)] = v
                         dict_version['modifieddate'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S") #convert to json available
                         networkObj['versions'].append(dict_version)
-                        stringhelpers.info('\n[VERSION][NETWORKOBJECT_ID] %s' % (json.dumps(dict_version)))
+                        stringhelpers.info('\n[VERSION][NETWORKOBJECT_ID: %s] %s' %
+                                           (str(networkObj.networkobject_id), json.dumps(dict_version)))
 
                     networkObj.save()
                     stringhelpers.info_green(
                         "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (str(self.deviceid), str(command_id), json.dumps(dict_parsing_field)), "\n")
-
             return output_result
 
         except Exception as _errorException:
