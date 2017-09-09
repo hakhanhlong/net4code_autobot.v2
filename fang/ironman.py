@@ -18,12 +18,13 @@ from fang.ironstuff.ironqueue import IronQueue
 
 class IronManager(threading.Thread):
     """ Thread management ironman thread """
-    def __init__(self, name, is_stop):
+    def __init__(self, name, is_stop, socketio):
         threading.Thread.__init__(self)
         self.name = name
         self.is_stop = is_stop
         self.counter = 0
         self.requestURL = RequestURL()
+        self.socketio = socketio
 
 
     def run(self):

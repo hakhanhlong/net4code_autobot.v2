@@ -1,4 +1,4 @@
 requests
 python-dotenv
 mongoengine
-socketIO-client-2
+socketIO-client-nexus

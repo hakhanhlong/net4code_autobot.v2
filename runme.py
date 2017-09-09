@@ -10,6 +10,13 @@ from mongoengine import connect
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
+from socketio.socketconnector import SocketConnector
+
+import logging
+logging.getLogger('socketIO-client-nexus').setLevel(logging.DEBUG)
+logging.basicConfig()
+
+
 
 def main():
 
@@ -18,13 +25,18 @@ def main():
 
     stringhelpers.print_welcome()
 
+
+
+    socketConnector = SocketConnector('localhost', 3000)
+    io = socketConnector.connect()
+
     '''_mega_manager = MegaManager('MEGA-MANAGEMENT', False)
     _mega_manager.start()
 
     _flask_manager = FlaskManager('FLASK-MANAGEMENT', False)
     _flask_manager.start()'''
 
-    _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False)
+    _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False, io)
     _ironman_manager.start()
 
 
