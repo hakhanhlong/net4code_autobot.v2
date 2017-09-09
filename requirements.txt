@@ -1,3 +1,4 @@
 requests
 python-dotenv
 mongoengine
+socketIO-client-2
