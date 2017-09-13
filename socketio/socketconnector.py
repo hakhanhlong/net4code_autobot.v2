@@ -1,4 +1,8 @@
 from socketIO_client_nexus import SocketIO, BaseNamespace
+from socketio.socketcallback import *
+import os
+
+
 
 
 
@@ -12,6 +16,9 @@ class MEGANamespace(BaseNamespace):
     pass
 
 
+
+
+
 class SocketConnector:
 
     def __init__(self, server, port):
@@ -20,14 +27,18 @@ class SocketConnector:
         self.server = server
         self.port = port
 
-
     def connect(self):
 
         io = SocketIO(self.server, self.port)
 
         io.define(IRONNamespace, '/iron')
         io.define(FLASHNamespace, '/flash')
-        io.define(FLASHNamespace, '/mega')
+        io.define(MEGANamespace, '/mega')
+
+
+        io.emit('login', {'app_client_secret_id': os.environ.get('APPCLIENT_SECRET'), 'name': 'AUTOBOT'}, callback_login)
+        io.wait_for_callbacks(seconds=1)
+
 
         #io.wait()
 

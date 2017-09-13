@@ -4,6 +4,7 @@ from ultils import stringhelpers
 from fang.mega import MegaManager
 from fang.ironman import IronManager
 from fang.flask import FlaskManager
+import os
 
 from mongoengine import connect
 
@@ -27,7 +28,7 @@ def main():
 
 
 
-    socketConnector = SocketConnector('localhost', 3000)
+    socketConnector = SocketConnector(os.environ.get('SOCKETBOT_SERVER'), os.environ.get('SOCKETBOT_PORT'))
     io = socketConnector.connect()
 
     '''_mega_manager = MegaManager('MEGA-MANAGEMENT', False)
