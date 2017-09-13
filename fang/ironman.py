@@ -6,11 +6,16 @@ from ultils import stringhelpers
 
 from api.request_helpers import RequestHelpers
 from api.request_url import RequestURL
+
+from api.sockbot_api_helpers import SockbotAPIHelpers
+from api.sockbot_api_url import SockbotAPIURL
+
 from fang.ironstuff.schedule import Schedule
 
 import queue
 
 from fang.ironstuff.ironqueue import IronQueue
+import os
 
 
 
@@ -25,6 +30,8 @@ class IronManager(threading.Thread):
         self.counter = 0
         self.requestURL = RequestURL()
         self.socketio = socketio
+        self._sockbotAPIHelpers = SockbotAPIHelpers()
+        self._sockbotAPIURL = SockbotAPIURL()
 
 
     def run(self):
@@ -65,10 +72,29 @@ class IronManager(threading.Thread):
                             _sub_mops = x.get('sub_mops', None)
                             dict_schedule[key_mop] = key_mop
 
-                            #if str(x['mop_id']) == '10':
+
                             schedule = Schedule("SCHEDULE-%d" % (mop_id), x, _sub_mops,  dict_schedule, False,
                                                 mechanism, mop_id, queue_discovery, x['output_mapping'])
                             arr_schedule_manage.append(schedule)
+
+                            #-----------------------process call api sockbot mop---------------------------------------
+
+                            params_mops = dict()
+                            params_mops['name'] = x['name']
+                            params_mops['app_secret_id'] = os.environ.get('SOCKBOT_APPCLIENT_SECRET')
+                            params_mops['mop_id'] = x['mop_id']
+                            params_mops['status'] = 'WAITING'
+                            params_mops['belong'] = 'IRONMAN'
+                            params_mops['command'] = 'STOP'
+                            submops = []
+                            for x_sub in _sub_mops:
+                                submops.append({'subNo':x_sub['subNo'], 'name':x_sub['name']})
+                            params_mops['submops'] = submops
+                            self._sockbotAPIHelpers.url = self._sockbotAPIURL.SOCKBOT_API_CREATE_MOP
+                            self._sockbotAPIHelpers.params = params_mops
+                            self._sockbotAPIHelpers.post_json()
+
+                            #------------------------------------------------------------------------------------------
 
                 if len(arr_schedule_manage) > 0:
                     for schedule in arr_schedule_manage:

@@ -36,7 +36,7 @@ class SocketConnector:
         io.define(MEGANamespace, '/mega')
 
 
-        io.emit('login', {'app_client_secret_id': os.environ.get('APPCLIENT_SECRET'), 'name': 'AUTOBOT'}, callback_login)
+        io.emit('login', {'app_client_secret_id': os.environ.get('SOCKBOT_APPCLIENT_SECRET'), 'name': 'AUTOBOT'}, callback_login)
         io.wait_for_callbacks(seconds=1)
 
 

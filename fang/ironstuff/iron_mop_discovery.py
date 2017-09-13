@@ -80,7 +80,7 @@ class Iron_Mop_Discovery(threading.Thread):
                 count = count + 1
             # ----------------------------------------------------------------------------------------------------------
         else:
-            stringhelpers.warn("[%s] MEGA TEMPLATE NOT DATA TO FANG\r\n" % (self.name))
+            stringhelpers.warn("[%s] IRON TEMPLATE NOT DATA TO FANG\r\n" % (self.name))
 
         self.done = True
 
@@ -209,7 +209,7 @@ class SubTemplate(threading.Thread):
             'port': port,
             'timeout': 10
         }
-        print("\nMEGA DISCOVERY FANG DEVICE: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
+        print("\nIRON DISCOVERY FANG DEVICE: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
         fac = FactoryConnector(**parameters)
         log_output_file_name = "%s.log" % (stringhelpers.generate_random_keystring(10))
         fac = fac.execute_keep_alive(loginfo=log_output_file_name)
@@ -221,7 +221,7 @@ class SubTemplate(threading.Thread):
             if not fac.is_alive():
                 return None
         else:
-            print("\nMEGA DISCOVERY CONNECTED DEVICE [SUCCESS]: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
+            print("\nIRON DISCOVERY CONNECTED DEVICE [SUCCESS]: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
         #---------------------------------------------------------------------------------------------------------------
 
         # --------------- list dict action command ---------------------------------------------------------------------
@@ -263,63 +263,7 @@ class SubTemplate(threading.Thread):
                     try:
                         thread_action_name = "Thread-Action_%s-In-%s" % (action_id, self.name)
                         action_data = _action
-                        #dependency = int(_action['dependency'])
-                        '''
-                        if dependency > 0:  # run need compare
-                            dependStep = dependency
-                            if (int(_action['condition']) == int(previous_final_output[dependStep - 1])):
 
-
-
-                                thread_action = Action(thread_action_name, action_data, action_id, None,
-                                                       None, vendor_ios,
-                                                       fac, self.is_rollback,
-                                                       log_output_file_name, deviceid=device['device_id'],
-                                                       table_name = self.table_name, data_fields=data_fields, key_merge=self.key_merge,
-                                                       submop_index=self.submop_index,
-                                                       dict_version_container = self.dict_version_container,mop_id = self.mop_id, len_submops=self.len_submops)
-
-                                thread_action.start()
-                                result = thread_action.join()
-                                result['action_id'] = action_id
-                                result['device_id'] = device['device_id']
-                                result['device_vendor_ios'] = vendor_ios
-                                previous_final_output.append(result['final_result_action'])
-                                self.array_state_action.append(result)
-                            else:
-                                stringhelpers.err(
-                                    "MEGA ACTIONS STEP: %s NOT AVAIABLE WITH FINAL_OUTPUT OF STEP %d| THREAD %s" % (
-                                    step, dependStep, self.name))
-                                previous_final_output.append(False)
-                                continue
-                        else:  # dependency == 0
-                            thread_action = Action(thread_action_name, action_data, action_id, None,
-                                                   None, vendor_ios,
-                                                   fac, self.is_rollback, log_output_file_name,
-                                                   deviceid=device['device_id'], table_name =self.table_name, data_fields = data_fields,
-                                                   key_merge=self.key_merge,
-                                                   submop_index=self.submop_index,
-                                                   dict_version_container=self.dict_version_container,
-                                                   mop_id=self.mop_id, len_submops=self.len_submops)
-                            thread_action.start()
-                            result = thread_action.join()
-                            result['action_id'] = action_id
-
-                            result['device_id'] = device['device_id']
-                            result['device_vendor_ios'] = vendor_ios
-
-                            previous_final_output.append(result['final_result_action'])
-
-                            self.array_state_action.append(result)
-
-                            if int(step) > 1:
-                                if int(result['final_result_action']) == int(_action.get('condition', 0)):
-                                    self.dict_state_result[str(device['device_id'])]["final_sub_template"] = True
-                                else:
-                                    self.dict_state_result[str(device['device_id'])]["final_sub_template"] = False
-                                    compare_final_output = []
-                                    break
-                        '''
                         thread_action = Action(thread_action_name, action_data, action_id, None,
                                                None, vendor_ios,
                                                fac, self.is_rollback, log_output_file_name,
@@ -341,7 +285,7 @@ class SubTemplate(threading.Thread):
                         self.array_state_action.append(result)
 
                     except:
-                        stringhelpers.warn("[%s] MEGA TEMPLATE REQUEST DATA ACTION %s FAIL\r\n" % (self.name, action_id))
+                        stringhelpers.warn("[%s] IRON TEMPLATE REQUEST DATA ACTION %s FAIL\r\n" % (self.name, action_id))
                 else:  # last command in actions check point
                     dependency = int(_action['dependency'])
                     try:
@@ -582,7 +526,7 @@ class Action(threading.Thread):
                                             previous_final_output.append(True)
                             else:
                                 stringhelpers.err(
-                                    "MEGA ACTIONS STEP: %s NOT AVAIABLE WITH FINAL_OUTPUT OF STEP %d| THREAD %s" % (step, dependStep, self.name))
+                                    "IRON ACTIONS STEP: %s NOT AVAIABLE WITH FINAL_OUTPUT OF STEP %d| THREAD %s" % (step, dependStep, self.name))
                                 previous_final_output.append(False)
                                 continue
                         else:  # dependency == 0
@@ -654,7 +598,7 @@ class Action(threading.Thread):
                             self.dict_state_result['final_result_action'] = True
 
                 except Exception as ex:
-                    stringhelpers.err("MEGA ACTIONS THREAD ERROR COMAPRE ACTION FINAL-OUTPUT: %s | THREAD %s" % (ex, self.name))
+                    stringhelpers.err("IRON ACTIONS THREAD ERROR COMAPRE ACTION FINAL-OUTPUT: %s | THREAD %s" % (ex, self.name))
                     # ---------------------------------------------------------------------------------------------------
 
             '''######################################################################################################'''
@@ -664,9 +608,9 @@ class Action(threading.Thread):
 
 
         except Exception as e:
-            stringhelpers.err("MEGA ACTIONS THREAD ERROR %s | THREAD %s" % (e, self.name))
+            stringhelpers.err("IRON ACTIONS THREAD ERROR %s | THREAD %s" % (e, self.name))
         except ConnectionError as errConn:
-            stringhelpers.err("MEGA ACTIONS CONNECT API URL ERROR %s | THREAD %s" % (self._request.url, self.name))
+            stringhelpers.err("IRON ACTIONS CONNECT API URL ERROR %s | THREAD %s" % (self._request.url, self.name))
 
 
     def process_each_command(self, command_id = 0, _command_list = None, step=''):
@@ -690,8 +634,7 @@ class Action(threading.Thread):
             ################### process args for command ##############################################
             command = self.data_command['command']
             ###########################################################################################
-            if command == 'show interface Et0/3':
-                test = ''
+
             if command is not None:
                 commands = [command]
                 #stringhelpers.info_green(command)
@@ -716,10 +659,10 @@ class Action(threading.Thread):
             else:
                 return None
         except Exception as e:
-            stringhelpers.err("[DISCOVERY] MEGA ACTION PROCESS EACH COMMAND ERROR %s | THREAD %s COMMAND %s" % (e, self.name, command))
+            stringhelpers.err("[DISCOVERY] IRON ACTION PROCESS EACH COMMAND ERROR %s | THREAD %s COMMAND %s" % (e, self.name, command))
             return None
         except ConnectionError as errConn:
-            stringhelpers.err("[DISCOVERY] MEGA ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name))
+            stringhelpers.err("[DISCOVERY] IRON ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name))
             return None
 
 
@@ -778,7 +721,7 @@ class Action(threading.Thread):
                             field_name = field_name.lower()
                             field_name = self.data_fields[str(command_id)].get(field_name, None)
                     except Exception as _error_field:
-                        _strError = "[DISCOVERY][LOOP][ERROR][FIELD] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (_error_field, self.name)
+                        _strError = "[DISCOVERY][LOOP][ERROR][FIELD] IRON ACTION PARSING %s ERROR %s | THREAD %s" % (_error_field, self.name)
                         stringhelpers.err(_strError)
 
                     filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
@@ -817,7 +760,7 @@ class Action(threading.Thread):
             return output_result
 
         except Exception as _errorException:
-            _strError = "[DISCOVERY][LOOP] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (_errorException, self.name)
+            _strError = "[DISCOVERY][LOOP] IRON ACTION PARSING %s ERROR %s | THREAD %s" % (_errorException, self.name)
             stringhelpers.err(_strError)
             return output_result
 
@@ -1077,7 +1020,7 @@ class Action(threading.Thread):
             return output_result
         except Exception as _errorException:
             output_result[key]['parsing_status'] = 'ERROR'
-            _strError = "[DISCOVERY] MEGA ACTION PARSING %s ERROR %s | THREAD %s" % (_errorException, self.name)
+            _strError = "[DISCOVERY] IRON ACTION PARSING %s ERROR %s | THREAD %s" % (_errorException, self.name)
             stringhelpers.err(_strError)
             return  output_result
 

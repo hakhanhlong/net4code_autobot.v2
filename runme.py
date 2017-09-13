@@ -28,7 +28,7 @@ def main():
 
 
 
-    socketConnector = SocketConnector(os.environ.get('SOCKETBOT_SERVER'), os.environ.get('SOCKETBOT_PORT'))
+    socketConnector = SocketConnector(os.environ.get('SOCKBOT_SERVER'), os.environ.get('SOCKBOT_PORT'))
     io = socketConnector.connect()
 
     '''_mega_manager = MegaManager('MEGA-MANAGEMENT', False)
