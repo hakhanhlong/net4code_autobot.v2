@@ -94,7 +94,7 @@ class IronManager(threading.Thread):
                             self._sockbotAPIHelpers.params = params_mops
                             self._sockbotAPIHelpers.post_json()
 
-                            #------------------------------------------------------------------------------------------
+                            #--------------------------------  ----------------------------------------------------------
 
                 if len(arr_schedule_manage) > 0:
                     for schedule in arr_schedule_manage:
