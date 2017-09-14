@@ -21,6 +21,9 @@ import os
 
 
 
+def on_command_response(args):
+    print(args)
+
 class IronManager(threading.Thread):
     """ Thread management ironman thread """
     def __init__(self, name, is_stop, socketio):
@@ -44,6 +47,8 @@ class IronManager(threading.Thread):
         # run queue listining discovery ------------------------------------------------------------------------------
         _ironQueue = IronQueue(queue_discovery)
         _ironQueue.start()
+
+        self.socketio.on('oncommand', on_command_response)
         # ------------------------------------------------------------------------------------------------------------
 
         while not self.is_stop:
@@ -83,22 +88,26 @@ class IronManager(threading.Thread):
                             params_mops['name'] = x['name']
                             params_mops['app_secret_id'] = os.environ.get('SOCKBOT_APPCLIENT_SECRET')
                             params_mops['mop_id'] = x['mop_id']
-                            params_mops['status'] = 'WAITING'
+                            params_mops['status'] = 'RUNNING'
                             params_mops['belong'] = 'IRONMAN'
-                            params_mops['command'] = 'STOP'
+                            params_mops['command'] = 'STARTED'
                             submops = []
                             for x_sub in _sub_mops:
-                                submops.append({'subNo':x_sub['subNo'], 'name':x_sub['name']})
+                                arr_devices = []
+                                for k,v in x_sub['devices'].items():
+                                    arr_devices.append({'device_id': v['device_id'],'vendor':'%s|%s'%(v['vendor'],v['os']),'port':v['port']})
+                                submops.append({'subNo':x_sub['subNo'], 'name':x_sub['name'], 'devices': arr_devices, 'num_devices':len(arr_devices)})
                             params_mops['submops'] = submops
                             self._sockbotAPIHelpers.url = self._sockbotAPIURL.SOCKBOT_API_CREATE_MOP
                             self._sockbotAPIHelpers.params = params_mops
                             self._sockbotAPIHelpers.post_json()
 
-                            #--------------------------------  ----------------------------------------------------------
+                            #------------------------------------------------------------------------------------------
 
                 if len(arr_schedule_manage) > 0:
                     for schedule in arr_schedule_manage:
                         schedule.start()
+
                     arr_schedule_manage.clear()
             except Exception as e:
                 stringhelpers.print_bold("IRONMAN SCHEDULE [ERROR]: " + str(e), "\n")

@@ -29,7 +29,7 @@ def main():
 
 
     socketConnector = SocketConnector(os.environ.get('SOCKBOT_SERVER'), os.environ.get('SOCKBOT_PORT'))
-    io = socketConnector.connect()
+    dict_sockbot = socketConnector.connect()
 
     '''_mega_manager = MegaManager('MEGA-MANAGEMENT', False)
     _mega_manager.start()
@@ -37,7 +37,7 @@ def main():
     _flask_manager = FlaskManager('FLASK-MANAGEMENT', False)
     _flask_manager.start()'''
 
-    _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False, io)
+    _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False, dict_sockbot['iron_namespace'])
     _ironman_manager.start()
 
 

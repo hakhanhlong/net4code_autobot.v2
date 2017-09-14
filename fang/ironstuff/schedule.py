@@ -14,7 +14,7 @@ from database.impl.table_impl import TABLEImpl
 class Schedule(threading.Thread):
     ''' Schedule threading'''
     def __init__(self, name=None, mop_data=None, sub_mops=None, dict_schedule=None, is_stop=None,
-                 mechanism=None, mop_id = 0, queue=None, output_mapping=None):
+                 mechanism=None, mop_id = 0, queue=None, output_mapping=None, socketio=None):
         threading.Thread.__init__(self)
         self.name = name
         self.mop_data = mop_data
@@ -30,6 +30,7 @@ class Schedule(threading.Thread):
         self.output_mapping = output_mapping
         self.database_mop = dict()
         self.trying_waiting_done = 1000
+        self.socketio = socketio
 
 
     def run(self):

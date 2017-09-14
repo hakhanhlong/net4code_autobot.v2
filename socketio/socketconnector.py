@@ -31,9 +31,9 @@ class SocketConnector:
 
         io = SocketIO(self.server, self.port)
 
-        io.define(IRONNamespace, '/iron')
-        io.define(FLASHNamespace, '/flash')
-        io.define(MEGANamespace, '/mega')
+        iron_namespace = io.define(IRONNamespace, '/iron')
+        flash_namespace = io.define(FLASHNamespace, '/flash')
+        mega_namespace = io.define(MEGANamespace, '/mega')
 
 
         io.emit('login', {'app_client_secret_id': os.environ.get('SOCKBOT_APPCLIENT_SECRET'), 'name': 'AUTOBOT'}, callback_login)
@@ -43,5 +43,5 @@ class SocketConnector:
         #io.wait()
 
 
-        return io
+        return dict(io=io,iron_namespace=iron_namespace, flash_namespace=flash_namespace, mega_namespace=mega_namespace)
 
