@@ -21,8 +21,7 @@ import os
 
 
 
-def on_command_response(args):
-    print(args)
+
 
 class IronManager(threading.Thread):
     """ Thread management ironman thread """
@@ -48,7 +47,6 @@ class IronManager(threading.Thread):
         _ironQueue = IronQueue(queue_discovery)
         _ironQueue.start()
 
-        self.socketio.on('oncommand', on_command_response)
         # ------------------------------------------------------------------------------------------------------------
 
         while not self.is_stop:
@@ -79,7 +77,7 @@ class IronManager(threading.Thread):
 
 
                             schedule = Schedule("SCHEDULE-%d" % (mop_id), x, _sub_mops,  dict_schedule, False,
-                                                mechanism, mop_id, queue_discovery, x['output_mapping'])
+                                                mechanism, mop_id, queue_discovery, x['output_mapping'], self.socketio)
                             arr_schedule_manage.append(schedule)
 
                             #-----------------------process call api sockbot mop---------------------------------------

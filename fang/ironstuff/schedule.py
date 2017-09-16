@@ -11,6 +11,8 @@ from datetime import datetime
 from database.impl.table_impl import TABLEImpl
 
 
+
+
 class Schedule(threading.Thread):
     ''' Schedule threading'''
     def __init__(self, name=None, mop_data=None, sub_mops=None, dict_schedule=None, is_stop=None,
@@ -32,10 +34,15 @@ class Schedule(threading.Thread):
         self.trying_waiting_done = 1000
         self.socketio = socketio
 
+        self.socketio.on('oncommand', self.on_command_response)
+
+
+    def on_command_response(args):
+        print("on_command:" + args)
 
     def run(self):
+
         try:
-            count_timesleep = 0
             dict_version_container = dict()
             #---------------------------- waiting time for time start ------------------------------------------------
             while self.is_waiting:
@@ -55,7 +62,7 @@ class Schedule(threading.Thread):
                     table_id = int(self.mop_data['save_to_table'])
                     tableImpl = TABLEImpl()
                     table_name = tableImpl.get(table_id)['table_name']
-                    key_merge = self.mop_data.get('key_merge', None);
+                    key_merge = self.mop_data.get('key_merge', None)
                     count_number = 0
                     arr_manager_discovery = []
 
