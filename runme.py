@@ -37,7 +37,8 @@ def main():
     _flask_manager = FlaskManager('FLASK-MANAGEMENT', False)
     _flask_manager.start()'''
 
-    _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False, dict_sockbot['iron_namespace'])
+    _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False, dict_sockbot['io'],
+                                   dict_sockbot['iron_namespace'])
     _ironman_manager.start()
 
 

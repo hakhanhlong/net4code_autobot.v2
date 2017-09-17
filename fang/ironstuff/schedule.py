@@ -16,7 +16,7 @@ from database.impl.table_impl import TABLEImpl
 class Schedule(threading.Thread):
     ''' Schedule threading'''
     def __init__(self, name=None, mop_data=None, sub_mops=None, dict_schedule=None, is_stop=None,
-                 mechanism=None, mop_id = 0, queue=None, output_mapping=None, socketio=None):
+                 mechanism=None, mop_id = 0, queue=None, output_mapping=None, socketio=None, socketio_iron=None):
         threading.Thread.__init__(self)
         self.name = name
         self.mop_data = mop_data
@@ -33,15 +33,15 @@ class Schedule(threading.Thread):
         self.database_mop = dict()
         self.trying_waiting_done = 1000
         self.socketio = socketio
-
-        self.socketio.on('oncommand', self.on_command_response)
+        self.socketio_iron = socketio_iron
 
 
     def on_command_response(args):
         print("on_command:" + args)
 
     def run(self):
-
+        self.socketio.on('oncommand', self.on_command_response)
+        self.socketio.wait(seconds=1)
         try:
             dict_version_container = dict()
             #---------------------------- waiting time for time start ------------------------------------------------

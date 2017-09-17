@@ -25,13 +25,14 @@ import os
 
 class IronManager(threading.Thread):
     """ Thread management ironman thread """
-    def __init__(self, name, is_stop, socketio):
+    def __init__(self, name, is_stop, socketio, socketio_iron):
         threading.Thread.__init__(self)
         self.name = name
         self.is_stop = is_stop
         self.counter = 0
         self.requestURL = RequestURL()
         self.socketio = socketio
+        self.socketio_iron = socketio_iron
         self._sockbotAPIHelpers = SockbotAPIHelpers()
         self._sockbotAPIURL = SockbotAPIURL()
 
@@ -77,7 +78,7 @@ class IronManager(threading.Thread):
 
 
                             schedule = Schedule("SCHEDULE-%d" % (mop_id), x, _sub_mops,  dict_schedule, False,
-                                                mechanism, mop_id, queue_discovery, x['output_mapping'], self.socketio)
+                                                mechanism, mop_id, queue_discovery, x['output_mapping'], self.socketio, self.socketio_iron)
                             arr_schedule_manage.append(schedule)
 
                             #-----------------------process call api sockbot mop---------------------------------------

@@ -36,8 +36,12 @@ class SocketConnector:
         mega_namespace = io.define(MEGANamespace, '/mega')
 
 
-        io.emit('login', {'app_client_secret_id': os.environ.get('SOCKBOT_APPCLIENT_SECRET'), 'name': 'AUTOBOT'}, callback_login)
+        io.emit('login', {'app_client_secret_id': os.environ.get('SOCKBOT_APPCLIENT_SECRET'),
+                          'name': 'AUTOBOT'}, callback_login)
         io.wait_for_callbacks(seconds=1)
+
+        iron_namespace.on('on_command',on_iron_command)
+        io.wait(seconds=1)
 
 
         #io.wait()
