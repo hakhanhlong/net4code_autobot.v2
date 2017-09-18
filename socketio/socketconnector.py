@@ -22,7 +22,7 @@ class MEGANamespace(BaseNamespace):
 class SocketConnector:
 
     def __init__(self, server, port):
-
+        # longhk
 
         self.server = server
         self.port = port
