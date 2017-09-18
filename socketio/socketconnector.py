@@ -40,7 +40,7 @@ class SocketConnector:
                           'name': 'AUTOBOT'}, callback_login)
         io.wait_for_callbacks(seconds=1)
 
-        iron_namespace.on('on_command',on_iron_command)
+        iron_namespace.on('on_command', on_iron_command)
         io.wait(seconds=1)
 
 
