@@ -1,4 +1,4 @@
-from socketIO_client_nexus import SocketIO, BaseNamespace
+from socketIO_client_nexus import SocketIO, BaseNamespace, LoggingNamespace
 from socketio.socketcallback import *
 import os
 
@@ -7,15 +7,19 @@ import os
 
 
 class IRONNamespace(BaseNamespace):
-    pass
+    def oncommand(self, *args):
+        stringhelpers.info(str(args))
+
+
+class DEFAULTNamespace(BaseNamespace):
+    def on_oncommand_response(self, *args):
+        stringhelpers.info(str(args))
 
 class FLASHNamespace(BaseNamespace):
     pass
 
 class MEGANamespace(BaseNamespace):
     pass
-
-
 
 
 
@@ -26,6 +30,10 @@ class SocketConnector:
 
         self.server = server
         self.port = port
+
+
+
+
 
     def connect(self):
 
@@ -38,10 +46,13 @@ class SocketConnector:
 
         io.emit('login', {'app_client_secret_id': os.environ.get('SOCKBOT_APPCLIENT_SECRET'),
                           'name': 'AUTOBOT'}, callback_login)
+
+        #login update socketid
         io.wait_for_callbacks(seconds=1)
 
-        iron_namespace.on('on_command', on_iron_command)
-        io.wait(seconds=1)
+
+
+
 
 
         #io.wait()

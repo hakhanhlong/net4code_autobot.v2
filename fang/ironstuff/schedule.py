@@ -36,12 +36,13 @@ class Schedule(threading.Thread):
         self.socketio_iron = socketio_iron
 
 
-    def on_command_response(args):
+    def on_command_response(self, args):
         print("on_command:" + args)
+        self.is_stop = True
 
     def run(self):
-        self.socketio.on('oncommand', self.on_command_response)
-        self.socketio.wait(seconds=1)
+        self.socketio_iron.on('oncommand', self.on_command_response)
+
         try:
             dict_version_container = dict()
             #---------------------------- waiting time for time start ------------------------------------------------
@@ -91,37 +92,39 @@ class Schedule(threading.Thread):
                             del self.dict_schedule[key_mop]
                             self.is_stop = True
                         else:
-                            while True:
-                                count = 0
-                                count_trying_waiting = 0
-                                for discovery_item in arr_manager_discovery:
-                                    if discovery_item.done == True:
-                                        count = count + 1
-                                    time.sleep(0.2)
-                                if count == len(arr_manager_discovery):
-                                    #count_timesleep = count_timesleep + 1
-                                    #_mop_details = self.database_mop.get(str(self.mop_id), None)
-                                    #if _mop_details is None:
+                            if not self.is_stop:
+                                while True:
+                                    count = 0
+                                    for discovery_item in arr_manager_discovery:
+                                        if discovery_item.done == True:
+                                            count = count + 1
+                                        time.sleep(0.2)
+                                    if count == len(arr_manager_discovery):
                                         #----------------------------- get detail sub mop --------------------------------------------------------------------
-                                    self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
-                                    _mop_details = self._request.get().json()
-                                    #    self.database_mop[str(self.mop_id)] = _mop_details
-                                    #self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
-                                    #_mop_details = self._request.get().json()
+                                        self._request.url = self.requestURL.IRONMAN_URL_GET_MOP_DETAIL % (str(self.mop_id))
+                                        _mop_details = self._request.get().json()
 
-                                    sub_mops = _mop_details.get('sub_mops', None)
-                                    if sub_mops is not None:
-                                        self.sub_mops = sub_mops
-                                        stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
-                                    #--------------------------------------------------------------------------------------------------------------
-                                    stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
-                                    stringhelpers.countdown(int(self.mop_data['return_after']) * 60)
-                                    #stringhelpers.countdown(60)
-                                    #time.sleep(int(self.mop_data['return_after']) * 60)
-                                    #time.sleep(2 * 60)
 
-                                    break
-                                time.sleep(1)
+                                        sub_mops = _mop_details.get('sub_mops', None)
+                                        if sub_mops is not None:
+                                            self.sub_mops = sub_mops
+                                            stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
+                                        #--------------------------------------------------------------------------------------------------------------
+                                        stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
+
+                                        time_remaining = int(self.mop_data['return_after']) * 60
+                                        for remaining in range(time_remaining, 0, -1):
+
+                                            str_time = "{:2d} seconds remaining.".format(remaining)
+                                            self.socketio_iron.emit('running_time_remain_mop', str_time)
+                                            time.sleep(1)
+
+                                            if self.is_stop: break #STOP MOP
+
+
+
+                                        break
+                                    time.sleep(1)
                 except Exception as _exError:
                     stringhelpers.err("[ERROR] %s" % (_exError))
 

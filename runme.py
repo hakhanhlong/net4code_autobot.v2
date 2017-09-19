@@ -42,5 +42,9 @@ def main():
     _ironman_manager.start()
 
 
+    #socket waiting response
+    dict_sockbot['io'].wait()
+
+
 if __name__ == '__main__':
     main()
