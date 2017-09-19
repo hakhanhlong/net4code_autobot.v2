@@ -16,7 +16,8 @@ from database.impl.table_impl import TABLEImpl
 class Schedule(threading.Thread):
     ''' Schedule threading'''
     def __init__(self, name=None, mop_data=None, sub_mops=None, dict_schedule=None, is_stop=None,
-                 mechanism=None, mop_id = 0, queue=None, output_mapping=None, socketio=None, socketio_iron=None):
+                 mechanism=None, mop_id = 0, queue=None, output_mapping=None, socketio=None,
+                 socketio_iron=None):
         threading.Thread.__init__(self)
         self.name = name
         self.mop_data = mop_data
@@ -75,7 +76,8 @@ class Schedule(threading.Thread):
 
                         irondiscovery = Iron_Mop_Discovery("IRONMAN-Thread-Template-%s" % (str(self.mop_id)),
                                                       sub_mop_item, {}, self.mop_id, table_name, self.output_mapping[str(sub_no)],
-                                                      key_merge, sub_no, dict_version_container, len_submops)
+                                                      key_merge, sub_no, dict_version_container,
+                                                           len_submops, self.socketio, self.socketio_iron)
                         # insert to queue discovery
                         self.queue.put(irondiscovery)
                         arr_manager_discovery.append(irondiscovery)
@@ -115,8 +117,12 @@ class Schedule(threading.Thread):
                                         time_remaining = int(self.mop_data['return_after']) * 60
                                         for remaining in range(time_remaining, 0, -1):
 
-                                            str_time = "{:2d} seconds remaining.".format(remaining)
-                                            self.socketio_iron.emit('running_time_remain_mop', str_time)
+                                            str_time = "Còn <strong>{:2d}s</strong> để chạy lần kế tiếp".format(remaining)
+                                            dict_time_remaining = {
+                                                'mop_id': self.mop_id,
+                                                'text': str_time
+                                            }
+                                            self.socketio_iron.emit('running_time_remain_mop', dict_time_remaining)
                                             time.sleep(1)
 
                                             if self.is_stop: break #STOP MOP

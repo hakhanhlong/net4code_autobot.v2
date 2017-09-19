@@ -45,7 +45,7 @@ class IronManager(threading.Thread):
         queue_discovery = queue.Queue()
 
         # run queue listining discovery ------------------------------------------------------------------------------
-        _ironQueue = IronQueue(queue_discovery)
+        _ironQueue = IronQueue(queue_discovery, self.socketio, self.socketio_iron)
         _ironQueue.start()
 
         # ------------------------------------------------------------------------------------------------------------

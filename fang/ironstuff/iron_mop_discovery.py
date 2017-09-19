@@ -22,7 +22,9 @@ import json
 class Iron_Mop_Discovery(threading.Thread):
     """ Thread instance each process template """
     def __init__(self,  name, sub_mop = None, dict_template = {}, mop_id = None, table_name=None, output_mapping=None,
-                 key_merge=None, submop_index=None, dict_version_container = None, len_submops = None):
+                 key_merge=None, submop_index=None, dict_version_container = None, len_submops = None,
+                 socketio=None,
+                 socketio_iron=None):
         threading.Thread.__init__(self)
         self.name = name
         self.sub_mop = sub_mop
@@ -43,6 +45,10 @@ class Iron_Mop_Discovery(threading.Thread):
         self.is_started  = False
         self.dict_version_container = dict_version_container
         self.len_submops = len_submops
+
+        self.socketio = socketio
+        self.socketio_iron = socketio_iron
+
 
 
     def update_mop_status(self, status, duration=None):
