@@ -9,8 +9,9 @@ from network_adapter.basehandler import BaseHandler
 class IOSXRHandler(BaseHandler):
     ''' ios handler to cisco network devices'''
 
-    def __init__(self, host='', protocol='telnet', username='', password='', port=None, timeout=30):
-        super().__init__(host, protocol, username, password, port, timeout)
+    def __init__(self, host='', protocol='telnet', username='', password='', port=None, timeout=30,
+                 socketio=None, socket_namespace=None, socket_command=None):
+        super().__init__(host, protocol, username, password, port, timeout,socketio, socket_namespace, socket_command)
 
 
     '''def ios_enable(self, enable_password='', timeout=10):

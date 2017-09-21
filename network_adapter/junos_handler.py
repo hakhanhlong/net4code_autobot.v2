@@ -9,8 +9,9 @@ class JunosHandler(BaseHandler):
 
     ''' junos handler to juniper network devices'''
 
-    def __init__(self, host='', protocol='telnet', username='', password='', port=None, timeout=30):
-        super().__init__(host, protocol, username, password, port, timeout)
+    def __init__(self, host='', protocol='telnet', username='', password='', port=None, timeout=30,
+                 socketio=None, socket_namespace=None, socket_command=None):
+        super().__init__(host, protocol, username, password, port, timeout,socketio, socket_namespace, socket_command)
 
     def execute_command(self, command_list, blanks=0, error_reporting=False, timeout=30):
         prompt = self.re_compile([

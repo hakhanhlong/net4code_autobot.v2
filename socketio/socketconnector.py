@@ -31,10 +31,6 @@ class SocketConnector:
         self.server = server
         self.port = port
 
-
-
-
-
     def connect(self):
 
         io = SocketIO(self.server, self.port)

@@ -77,7 +77,8 @@ class Iron_Mop_Discovery(threading.Thread):
                 #out_mapping = self.output_mapping.get(str(count), None)
                 subtemplate_thread = SubTemplate(sub_template_name, fang, False, self.result_templates, int(fang['mode']),
                                                  self.table_name, self.output_mapping, self.key_merge, self.submop_index,
-                                                 self.dict_version_container, self.mop_id, self.len_submops)
+                                                 self.dict_version_container, self.mop_id, self.len_submops, self.socketio,
+                                                 self.socketio_iron)
                 self.update_mop_status('running')
                 subtemplate_thread.start()
                 dict_template = dict(sub_template_name = sub_template_name, state = subtemplate_thread.join(), fang=fang, mode=int(fang['mode']))
@@ -86,7 +87,8 @@ class Iron_Mop_Discovery(threading.Thread):
                 count = count + 1
             # ----------------------------------------------------------------------------------------------------------
         else:
-            stringhelpers.warn("[%s] IRON TEMPLATE NOT DATA TO FANG\r\n" % (self.name))
+            stringhelpers.warn("[%s] IRON TEMPLATE NOT DATA TO FANG\r\n" % (self.name),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
         self.done = True
 
@@ -142,7 +144,8 @@ class Iron_Mop_Discovery(threading.Thread):
                     else:
                         info_fang['actions'] = None
                 except Exception as _error:
-                    stringhelpers.err("IRON MOP DISCOVERY BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error))
+                    stringhelpers.err("IRON MOP DISCOVERY BUILD buildinfo_subtemplates ERROR %s\n\r" % (_error),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             if subtemplate is not None:
                 data_fang['subtemplates'].append(subtemplate)
         except:
@@ -162,7 +165,7 @@ class SubTemplate(threading.Thread):
     '''sub template'''
     def __init__(self, name, subtemplate=None, is_rollback=False, result_templates = None, mode = 0, table_name=None,
                  output_mapping=None, key_merge=None, submop_index=None, dict_version_container=None, mop_id=None,
-                 len_submops=None):
+                 len_submops=None, socketio=None, socketio_iron=None):
         threading.Thread.__init__(self)
         self.subtemplate = subtemplate
         self.name = name
@@ -182,6 +185,9 @@ class SubTemplate(threading.Thread):
         self.mop_id = mop_id
         self.len_submops = len_submops
 
+        self.socketio = socketio
+        self.socketio_iron = socketio_iron
+
 
 
 
@@ -189,7 +195,8 @@ class SubTemplate(threading.Thread):
 
         actions = data_fang.get('actions', None)
         if actions is None:
-            stringhelpers.info('\n[IRON][DISCOVERY][ACTIONS IS NONE] %s' % (str(self.name)))
+            stringhelpers.info('\n[IRON][DISCOVERY][ACTIONS IS NONE] %s' % (str(self.name)),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             return None
 
 
@@ -213,21 +220,28 @@ class SubTemplate(threading.Thread):
             'username': username,
             'password': password,
             'port': port,
-            'timeout': 10
+            'timeout': 10,
+            'socketio': self.socketio,
+            'socket_namespace': self.socketio_iron,
+            'socket_command': 'overall_terminal'
         }
-        print("\nIRON DISCOVERY FANG DEVICE: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
+        stringhelpers.info("\nIRON DISCOVERY FANG DEVICE: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
         fac = FactoryConnector(**parameters)
         log_output_file_name = "%s.log" % (stringhelpers.generate_random_keystring(10))
         fac = fac.execute_keep_alive(loginfo=log_output_file_name)
         if not fac.is_alive():
-            print("CONNECT DEVICE: host=%s, port=%s, devicetype=%s FAIL\n\n" % (parameters['host'], parameters['port'], parameters['device_type']))
+            stringhelpers.info("CONNECT DEVICE: host=%s, port=%s, devicetype=%s FAIL\n\n" % (parameters['host'], parameters['port'], parameters['device_type']),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             fac = fac.execute_keep_alive(loginfo=log_output_file_name)
-            print("CONNECT DEVICE: host=%s, port=%s, devicetype=%s RE-CONNECTING\n\n" % (
-            parameters['host'], parameters['port'], parameters['device_type']))
+            stringhelpers.info("CONNECT DEVICE: host=%s, port=%s, devicetype=%s RE-CONNECTING\n\n" % (
+            parameters['host'], parameters['port'], parameters['device_type']),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             if not fac.is_alive():
                 return None
         else:
-            print("\nIRON DISCOVERY CONNECTED DEVICE [SUCCESS]: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']))
+            stringhelpers.info_green("\nIRON DISCOVERY CONNECTED DEVICE [SUCCESS]: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
         #---------------------------------------------------------------------------------------------------------------
 
         # --------------- list dict action command ---------------------------------------------------------------------
@@ -263,7 +277,8 @@ class SubTemplate(threading.Thread):
                         fac.terminal()  # finished fang command
 
                         stringhelpers.err('[ERROR][DO NOT VENDOR_IOS] %s DEVICE ID: %s ACTION ID: %s' % (
-                        vendor_ios, str(device['device_id']), str(action_id)))
+                        vendor_ios, str(device['device_id']), str(action_id)),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
                         return None
                     try:
@@ -278,7 +293,8 @@ class SubTemplate(threading.Thread):
                                                key_merge=self.key_merge,
                                                submop_index=self.submop_index,
                                                dict_version_container=self.dict_version_container,
-                                               mop_id=self.mop_id, len_submops=self.len_submops)
+                                               mop_id=self.mop_id, len_submops=self.len_submops,
+                                               socketio=self.socketio, socketio_iron=self.socketio_iron)
                         thread_action.start()
                         result = thread_action.join()
                         result['action_id'] = action_id
@@ -291,7 +307,8 @@ class SubTemplate(threading.Thread):
                         self.array_state_action.append(result)
 
                     except:
-                        stringhelpers.warn("[%s] IRON TEMPLATE REQUEST DATA ACTION %s FAIL\r\n" % (self.name, action_id))
+                        stringhelpers.warn("[%s] IRON TEMPLATE REQUEST DATA ACTION %s FAIL\r\n" % (self.name, action_id),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                 else:  # last command in actions check point
                     dependency = int(_action['dependency'])
                     try:
@@ -330,7 +347,8 @@ class SubTemplate(threading.Thread):
         try:
             if self.subtemplate is not None:
                 threading_array = []
-                stringhelpers.info("\n[INFO]-RUN SUBTEMPLATE: %s" % (self.name))
+                stringhelpers.info("\n[INFO]-RUN SUBTEMPLATE: %s" % (self.name),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                 filnal_result = []
 
                 #------------------ chay ko song song ------------------------------------------------------------------
@@ -346,12 +364,14 @@ class SubTemplate(threading.Thread):
                             try:
                                 final_sub_template = before_result['state'][str(device_id)]['final_sub_template']
                                 if final_sub_template == False:
-                                    print("SUB TEMPLATE: %s FOR DEVICE: %s DON'T CONTINIOUS RUN\n\n" % (
-                                        self.name, device_id))
+                                    stringhelpers.info_green("SUB TEMPLATE: %s FOR DEVICE: %s DON'T CONTINIOUS RUN\n\n" % (
+                                        self.name, device_id),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                                     break
                             except:
-                                print(
-                                    "SUB TEMPLATE: %s FOR DEVICE: %s DON'T CONTINIOUS RUN\n\n" % (self.name, device_id))
+                                stringhelpers.err(
+                                    "SUB TEMPLATE: %s FOR DEVICE: %s DON'T CONTINIOUS RUN\n\n" % (self.name, device_id),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                                 break
 
                         # ------------------------------------------------------------------------------------------
@@ -380,12 +400,14 @@ class SubTemplate(threading.Thread):
                             try:
                                 final_sub_template = before_result['state'][str(device_id)]['final_sub_template']
                                 if final_sub_template == False:
-                                    print("SUB TEMPLATE: %s FOR DEVICE: %s DON'T CONTINIOUS RUN\n\n" % (
-                                    self.name, device_id))
+                                    stringhelpers.err("SUB TEMPLATE: %s FOR DEVICE: %s DON'T CONTINIOUS RUN\n\n" % (
+                                    self.name, device_id),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                                     break
                             except:
-                                print(
-                                    "SUB TEMPLATE: %s FOR DEVICE: %s DON'T CONTINIOUS RUN\n\n" % (self.name, device_id))
+                                stringhelpers.err(
+                                    "SUB TEMPLATE: %s FOR DEVICE: %s DON'T CONTINIOUS RUN\n\n" % (self.name, device_id),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                                 break
 
                         # ------------------------------------------------------------------------------------------
@@ -414,7 +436,8 @@ class SubTemplate(threading.Thread):
                             pass
                     #-------------------------------------------------------------------------------------------------------
         except Exception as exError:
-            stringhelpers.err("[ERROR] RUN SUBTEMPLATE-[%s]: %s" % (self.name, exError))
+            stringhelpers.err("[ERROR] RUN SUBTEMPLATE-[%s]: %s" % (self.name, exError),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
     def join(self):
         threading.Thread.join(self)
@@ -427,7 +450,7 @@ class Action(threading.Thread):
     def __init__(self, name, data_action = None, action_id = None, params_action=None, param_rollback_action=None,
                  vendor_os=None, session_fang=None, is_rolback=False, file_log=None,
                  deviceid=None, table_name=None, data_fields=None, key_merge=None, submop_index=None,
-                 dict_version_container=None, mop_id=None, len_submops=None):
+                 dict_version_container=None, mop_id=None, len_submops=None, socketio=None, socketio_iron=None):
         threading.Thread.__init__(self)
         self.name = name
         self.data_action = data_action
@@ -460,6 +483,8 @@ class Action(threading.Thread):
         self.mop_id = mop_id
         self.len_submops=len_submops
 
+        self.socketio = socketio
+        self.socketio_iron = socketio_iron
 
 
         # sao the nay
@@ -526,13 +551,15 @@ class Action(threading.Thread):
                                             stringhelpers.info(
                                                 "\nAction: [%s]-- config step [%s]: filnal-output: %s" % (
                                                 self.action_id, step,
-                                                str(output_info[str(command_id)]['final_output'])))
+                                                str(output_info[str(command_id)]['final_output'])),
+                                                socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                                         else:
                                             # previous_final_output.append(False)
                                             previous_final_output.append(True)
                             else:
                                 stringhelpers.err(
-                                    "IRON ACTIONS STEP: %s NOT AVAIABLE WITH FINAL_OUTPUT OF STEP %d| THREAD %s" % (step, dependStep, self.name))
+                                    "IRON ACTIONS STEP: %s NOT AVAIABLE WITH FINAL_OUTPUT OF STEP %d| THREAD %s" % (step, dependStep, self.name),
+                                    socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                                 previous_final_output.append(False)
                                 continue
                         else:  # dependency == 0
@@ -548,7 +575,9 @@ class Action(threading.Thread):
                                         self.action_log['result']['outputs'][key_list_command]['config'].append(
                                             output_info)
                                         stringhelpers.info("\nAction: [%s]-- config step [%s]: filnal-output: %s" % (
-                                        self.action_id, step, str(output_info[str(command_id)]['final_output'])))
+                                        self.action_id, step, str(output_info[str(command_id)]['final_output'])),
+                                                           socket_namespace=self.socketio_iron,
+                                                           on_command_text='overall_terminal')
                                         if int(step) > 1:
                                             if int(output_info[str(command_id)]['final_output']) == int(
                                                     _command_running.get('condition', 0)):
@@ -604,7 +633,8 @@ class Action(threading.Thread):
                             self.dict_state_result['final_result_action'] = True
 
                 except Exception as ex:
-                    stringhelpers.err("IRON ACTIONS THREAD ERROR COMAPRE ACTION FINAL-OUTPUT: %s | THREAD %s" % (ex, self.name))
+                    stringhelpers.err("IRON ACTIONS THREAD ERROR COMAPRE ACTION FINAL-OUTPUT: %s | THREAD %s" % (ex, self.name),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                     # ---------------------------------------------------------------------------------------------------
 
             '''######################################################################################################'''
@@ -614,9 +644,11 @@ class Action(threading.Thread):
 
 
         except Exception as e:
-            stringhelpers.err("IRON ACTIONS THREAD ERROR %s | THREAD %s" % (e, self.name))
+            stringhelpers.err("IRON ACTIONS THREAD ERROR %s | THREAD %s" % (e, self.name),
+                              socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
         except ConnectionError as errConn:
-            stringhelpers.err("IRON ACTIONS CONNECT API URL ERROR %s | THREAD %s" % (self._request.url, self.name))
+            stringhelpers.err("IRON ACTIONS CONNECT API URL ERROR %s | THREAD %s" % (self._request.url, self.name),
+                              socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
 
     def process_each_command(self, command_id = 0, _command_list = None, step=''):
@@ -630,7 +662,8 @@ class Action(threading.Thread):
             try:
                 if int(self.data_command['type']) == 5:
                     sleep(int(self.data_command['delay']))
-                    stringhelpers.info("[DELAY COMMAND %s %s]" % (command_id, self.data_command['delay']))
+                    stringhelpers.info("[DELAY COMMAND %s %s]" % (command_id, self.data_command['delay']),
+                                       socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                     return None
             except Exception as ex_error:
                 errror = ex_error
@@ -653,7 +686,8 @@ class Action(threading.Thread):
                     self.fang.execute_template_action_command(commands, blanks=2, error_reporting=True, timeout=-1, terminal=False)
                     result_fang = self.fang.get_action_output(self.log_output_file_name)
                     stringhelpers.info_green(
-                        "\n[DISCOVERY] COMMAND '%s' IS LOOP '%s'| THREAD %s" % (commands[0], is_loop, self.name))
+                        "\n[DISCOVERY] COMMAND '%s' IS LOOP '%s'| THREAD %s" % (commands[0], is_loop, self.name),
+                        socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                     if is_loop == 'false':
                         self.parsing(command_id ,result_fang, commands[0], step) #parsing merge
                     else:
@@ -665,10 +699,12 @@ class Action(threading.Thread):
             else:
                 return None
         except Exception as e:
-            stringhelpers.err("[DISCOVERY] IRON ACTION PROCESS EACH COMMAND ERROR %s | THREAD %s COMMAND %s" % (e, self.name, command))
+            stringhelpers.err("[DISCOVERY] IRON ACTION PROCESS EACH COMMAND ERROR %s | THREAD %s COMMAND %s" % (e, self.name, command),
+                              socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             return None
         except ConnectionError as errConn:
-            stringhelpers.err("[DISCOVERY] IRON ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name))
+            stringhelpers.err("[DISCOVERY] IRON ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name),
+                              socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             return None
 
 
@@ -716,7 +752,7 @@ class Action(threading.Thread):
                             _strError = "[DISCOVERY][LOOP][ERROR][START_LINE][ON_ROW][RESULT = NULL] " \
                                         "START_LINE = %s|MOPID:%s|DEVICE ID:%s |COMMAND ID: %s|COMMAND:%s| THREAD %s" % \
                                         (start_line, str(self.mop_id), str(self.deviceid), str(command_id),commandtext,self.name)
-                            stringhelpers.err(_strError)
+                            stringhelpers.err(_strError,socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                     #result_fang = stringhelpers.find_between_keep_str_start(result_fang, start_line, end_line)
 
                 if result_fang is not '':
@@ -728,7 +764,7 @@ class Action(threading.Thread):
                             field_name = self.data_fields[str(command_id)].get(field_name, None)
                     except Exception as _error_field:
                         _strError = "[DISCOVERY][LOOP][ERROR][FIELD] IRON ACTION PARSING %s ERROR %s | THREAD %s" % (_error_field, self.name)
-                        stringhelpers.err(_strError)
+                        stringhelpers.err(_strError,socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
                     filter_result_fang = stringhelpers.find_between(result_fang, start_by, end_by)
 
@@ -758,16 +794,18 @@ class Action(threading.Thread):
                         dict_version['modifieddate'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S") #convert to json available
                         networkObj['versions'].append(dict_version)
                         stringhelpers.info('\n[VERSION][NETWORKOBJECT_ID: %s] %s' %
-                                           (str(networkObj.networkobject_id), json.dumps(dict_version)))
+                                           (str(networkObj.networkobject_id), json.dumps(dict_version)),
+                                           socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
                     networkObj.save()
                     stringhelpers.info_green(
-                        "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (str(self.deviceid), str(command_id), json.dumps(dict_parsing_field)), "\n")
+                        "[IRON][CALCULATE][IS_LOOP][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD %s]" % (str(self.deviceid), str(command_id), json.dumps(dict_parsing_field)), "\n",
+                        socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             return output_result
 
         except Exception as _errorException:
             _strError = "[DISCOVERY][LOOP] IRON ACTION PARSING %s ERROR %s | THREAD %s" % (_errorException, self.name)
-            stringhelpers.err(_strError)
+            stringhelpers.err(_strError,socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             return output_result
 
 
@@ -933,7 +971,9 @@ class Action(threading.Thread):
                                                 merge_item_first.save()
                                                 stringhelpers.info_green(
                                                     "[IRON][CALCULATE][MERGE][DEVICE ID: %s, COMMAND ID: %s][INSERT FIELD][%s]" % (
-                                                    str(self.deviceid), str(command_id), json.dumps(dict_insert_into_merge)), "\n")
+                                                    str(self.deviceid), str(command_id), json.dumps(dict_insert_into_merge)), "\n",
+                                                    socket_namespace=self.socketio_iron,
+                                                    on_command_text='overall_terminal')
 
                                             else:
                                                 intf = netwImpl.save(**data_build)
@@ -947,7 +987,7 @@ class Action(threading.Thread):
 
                                 except Exception as ex:
                                     _strError = "[DISCOVERY][INSERT][UPDATE][%s]: %s | THREAD %s" % (ex, string_table_name, self.name)
-                                    stringhelpers.err(_strError)
+                                    stringhelpers.err(_strError,socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                                 #-------------------------------------------------------------------------------------------
 
                                 output_result['rows'].append(rows_dict)
@@ -996,7 +1036,7 @@ class Action(threading.Thread):
 
                                 except Exception as _outputHeaderError:
                                     _strError = "[DISCOVERY][PARSING][HEADER][%s]: %s | THREAD %s" % (self.name, _outputHeaderError)
-                                    stringhelpers.err(_strError)
+                                    stringhelpers.err(_strError,socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
                             is_next = True
                     row_count = row_count + 1
@@ -1015,11 +1055,13 @@ class Action(threading.Thread):
                                 netwImpl.delete(d)
                                 stringhelpers.err(
                                     '[DELETE][NETWORK_OBJECT_ID] - %s [DEVICE ID]=%s [COMMAND ID] = %s' % (
-                                        str(d), str(self.deviceid), str(command_id)), '\n\n')
+                                        str(d), str(self.deviceid), str(command_id)), '\n\n',
+                                    socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                 # --------------------------------------------------------------------------------------------------------------
 
             else:
-                stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n')
+                stringhelpers.err('[HEADER NOT FOUND][COMMAND ID:%s]' % (str(command_id)), '\n\n',
+                                  socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
                 #-----------------------------------------------------------------------------------------------------------------------------
 
@@ -1027,7 +1069,7 @@ class Action(threading.Thread):
         except Exception as _errorException:
             output_result[key]['parsing_status'] = 'ERROR'
             _strError = "[DISCOVERY] IRON ACTION PARSING %s ERROR %s | THREAD %s" % (_errorException, self.name)
-            stringhelpers.err(_strError)
+            stringhelpers.err(_strError, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             return  output_result
 
     def join(self):

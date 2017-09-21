@@ -4,8 +4,12 @@ import re
 import os
 
 
+from ultils import stringhelpers
+
+
 class BaseHandler:
-    def __init__(self, host='', protocol='telnet', username='', password='', port=None, timeout=30):
+    def __init__(self, host='', protocol='telnet', username='', password='', port=None, timeout=30,
+                 socketio=None, socket_namespace=None, socket_command=None):
         self.host = host
         self.protocol = protocol.lower()
         self.username = username
@@ -13,6 +17,9 @@ class BaseHandler:
         self.port = port
         self.timeout = timeout
         self.output_result = []
+        self.socketio = socketio
+        self.socket_namespace = socket_namespace
+        self.socket_command = socket_command
 
 
 
@@ -138,6 +145,10 @@ class BaseHandler:
         result = result.replace("[K --More", "")
         result = result.replace("--           [K", "")
         result = result.replace("           ", "")
+
+        stringhelpers.print_bold(result, socket_namespace=self.socket_namespace, on_command_text=self.socket_command)
+
+
         return result
 
 
@@ -176,7 +187,8 @@ class BaseHandler:
 
 
             open(filelog, "w").close()
-
+            stringhelpers.print_bold(result, socket_namespace=self.socket_namespace,
+                                     on_command_text=self.socket_command)
             return result
         except Exception as error:
             pass

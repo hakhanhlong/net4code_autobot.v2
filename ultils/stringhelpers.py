@@ -14,9 +14,19 @@ def generate_random_keystring(length):
     return ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(length))
 
 
-def print_bold(msg, end='\n'):
+def print_bold(msg, end='\n', socketio=None, socket_namespace=None, on_command_text=None):
     """ print a string in 'bold' font """
-    print("\033[1m" + msg + "\033[0m", end=end)
+    _msg = "\033[1m" + msg + "\033[0m"
+    print(_msg, end=end)
+    if socketio is not None:
+        socketio.emit(on_command_text, _msg)
+
+    if socket_namespace is not None:
+        socket_namespace.emit(on_command_text, _msg)
+
+
+
+
 
 def print_welcome():
     str_welcome = '''
@@ -40,17 +50,45 @@ AAAAAAA                   AAAAAAA  UUUUUUUUU            TTTTTTTTTTT           OO
     info(str_welcome)
 
 
-def info_green(msg, end='\n'):
-    print(OKGREEN + msg + ENDC, end=end)
+def info_green(msg, end='\n', socketio=None, socket_namespace=None, on_command_text=None):
+    _msg = OKGREEN + msg + ENDC
+    print(_msg, end=end)
+    if socketio is not None:
+        socketio.emit(on_command_text, _msg)
 
-def info(msg, end='\n'):
-    print(OKBLUE + msg + ENDC, end=end)
+    if socket_namespace is not None:
+        socket_namespace.emit(on_command_text, _msg)
 
-def warn(msg, end='\n'):
-    print(WARNING + msg + ENDC, end=end)
+def info(msg, end='\n', socketio=None, socket_namespace=None, on_command_text=None):
+    _msg = OKBLUE + msg + ENDC
+    print(_msg, end=end)
+    if socketio is not None:
+        socketio.emit(on_command_text, _msg)
 
-def err(msg, end='\n'):
-    print(FAIL + msg + ENDC, end=end)
+    if socket_namespace is not None:
+        socket_namespace.emit(on_command_text, _msg)
+
+
+def warn(msg, end='\n', socketio=None, socket_namespace=None, on_command_text=None):
+    _msg = WARNING + msg + ENDC
+    print(_msg, end=end)
+    if socketio is not None:
+        socketio.emit(on_command_text, _msg)
+
+    if socket_namespace is not None:
+        socket_namespace.emit(on_command_text, _msg)
+
+
+def err(msg, end='\n', socketio=None, socket_namespace=None, on_command_text=None):
+
+
+    _msg = FAIL + msg + ENDC
+    print(_msg, end=end)
+    if socketio is not None:
+        socketio.emit(on_command_text, _msg)
+
+    if socket_namespace is not None:
+        socket_namespace.emit(on_command_text, _msg)
 
 
 '''move text to each row'''

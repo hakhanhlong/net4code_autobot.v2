@@ -55,7 +55,8 @@ class Schedule(threading.Thread):
                 if time_current >= time_start:
                     self.is_waiting = False
                 else:
-                    stringhelpers.info('\n[IRON][DISCOVERY][START RUNNING TIME][%s]' % (str(self.mop_data['run_datetime'])))
+                    stringhelpers.info('\n[IRON][DISCOVERY][START RUNNING TIME][%s]' % (str(self.mop_data['run_datetime'])),
+                    socket_namespace = self.socketio_iron, on_command_text = 'overall_terminal')
             #-----------------------------------------------------------------------------------------------------------
             while not self.is_stop:
                 # -------------------- run device from mop -------------------------------------------------------------
@@ -82,7 +83,8 @@ class Schedule(threading.Thread):
                         self.queue.put(irondiscovery)
                         arr_manager_discovery.append(irondiscovery)
                         count_number = count_number + 1
-                        stringhelpers.info('\n[ENQUEUE] - > [IRON][DISCOVERY][MOP_ID: %s][SUB_MOP_NAME: %s]' % (str(self.mop_id), sub_mop_item['name']))
+                        stringhelpers.info('\n[ENQUEUE] - > [IRON][DISCOVERY][MOP_ID: %s][SUB_MOP_NAME: %s]' % (str(self.mop_id), sub_mop_item['name']),
+                                           socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
 
                     if self.mechanism.upper() == 'MANUAL':
@@ -110,9 +112,11 @@ class Schedule(threading.Thread):
                                         sub_mops = _mop_details.get('sub_mops', None)
                                         if sub_mops is not None:
                                             self.sub_mops = sub_mops
-                                            stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name))
+                                            stringhelpers.info('\n[IRON][DISCOVERY][GET_MOP_DETAIL_FOR_LOOP][MOP_ID:%s][%s]' % (self.mop_id, self.name),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
                                         #--------------------------------------------------------------------------------------------------------------
-                                        stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name))
+                                        stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name),
+                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
                                         time_remaining = int(self.mop_data['return_after']) * 60
                                         for remaining in range(time_remaining, 0, -1):
@@ -120,7 +124,8 @@ class Schedule(threading.Thread):
                                             str_time = "Còn <strong>{:2d}s</strong> để chạy lần kế tiếp".format(remaining)
                                             dict_time_remaining = {
                                                 'mop_id': self.mop_id,
-                                                'text': str_time
+                                                'text': str_time,
+                                                'time_count': "{:2d}".format(remaining)
                                             }
                                             self.socketio_iron.emit('running_time_remain_mop', dict_time_remaining)
                                             time.sleep(1)
