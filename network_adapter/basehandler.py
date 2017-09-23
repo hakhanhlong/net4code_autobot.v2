@@ -146,7 +146,7 @@ class BaseHandler:
         result = result.replace("--           [K", "")
         result = result.replace("           ", "")
 
-        stringhelpers.print_bold(result, socket_namespace=self.socket_namespace, on_command_text=self.socket_command)
+        #stringhelpers.print_bold(result, socket_namespace=self.socket_namespace, on_command_text=self.socket_command)
 
 
         return result
@@ -187,8 +187,7 @@ class BaseHandler:
 
 
             open(filelog, "w").close()
-            stringhelpers.print_bold(result, socket_namespace=self.socket_namespace,
-                                     on_command_text=self.socket_command)
+            #stringhelpers.print_bold(result, socket_namespace=self.socket_namespace, on_command_text=self.socket_command)
             return result
         except Exception as error:
             pass

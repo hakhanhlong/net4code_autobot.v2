@@ -487,7 +487,9 @@ class Action(threading.Thread):
         self.socketio_iron = socketio_iron
 
 
-        # sao the nay
+    def send_command_log_sockbot(self, data_send):
+        self.socketio_iron.emit('on_device_terminal', data_send)
+
     def run(self):
         try:
             key_list_command = self.vendor_os
@@ -557,9 +559,9 @@ class Action(threading.Thread):
                                             # previous_final_output.append(False)
                                             previous_final_output.append(True)
                             else:
-                                stringhelpers.err(
-                                    "IRON ACTIONS STEP: %s NOT AVAIABLE WITH FINAL_OUTPUT OF STEP %d| THREAD %s" % (step, dependStep, self.name),
-                                    socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+                                _msg = "IRON ACTIONS STEP: %s NOT AVAIABLE WITH FINAL_OUTPUT OF STEP %d| THREAD %s" % (step, dependStep, self.name)
+                                stringhelpers.err(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+                                self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [_msg]})
                                 previous_final_output.append(False)
                                 continue
                         else:  # dependency == 0
@@ -574,10 +576,11 @@ class Action(threading.Thread):
                                         previous_final_output.append(output_info[str(command_id)]['final_output'])
                                         self.action_log['result']['outputs'][key_list_command]['config'].append(
                                             output_info)
-                                        stringhelpers.info("\nAction: [%s]-- config step [%s]: filnal-output: %s" % (
-                                        self.action_id, step, str(output_info[str(command_id)]['final_output'])),
-                                                           socket_namespace=self.socketio_iron,
-                                                           on_command_text='overall_terminal')
+                                        _msg = "\nAction: [%s]-- config step [%s]: filnal-output: %s" % (
+                                        self.action_id, step, str(output_info[str(command_id)]['final_output']))
+                                        stringhelpers.info(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+                                        self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [_msg]})
+
                                         if int(step) > 1:
                                             if int(output_info[str(command_id)]['final_output']) == int(
                                                     _command_running.get('condition', 0)):
@@ -633,22 +636,22 @@ class Action(threading.Thread):
                             self.dict_state_result['final_result_action'] = True
 
                 except Exception as ex:
-                    stringhelpers.err("IRON ACTIONS THREAD ERROR COMAPRE ACTION FINAL-OUTPUT: %s | THREAD %s" % (ex, self.name),
-                                      socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+                    _msg = "IRON ACTIONS THREAD ERROR COMAPRE ACTION FINAL-OUTPUT: %s | THREAD %s" % (ex, self.name)
+                    stringhelpers.err(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+                    self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [_msg]})
                     # ---------------------------------------------------------------------------------------------------
 
             '''######################################################################################################'''
 
-
-
-
-
         except Exception as e:
-            stringhelpers.err("IRON ACTIONS THREAD ERROR %s | THREAD %s" % (e, self.name),
-                              socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+            _msg = "IRON ACTIONS THREAD ERROR %s | THREAD %s" % (e, self.name)
+            stringhelpers.err(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+            self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [_msg]})
+
         except ConnectionError as errConn:
-            stringhelpers.err("IRON ACTIONS CONNECT API URL ERROR %s | THREAD %s" % (self._request.url, self.name),
-                              socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+            _msg = "IRON ACTIONS CONNECT API URL ERROR %s | THREAD %s" % (self._request.url, self.name)
+            stringhelpers.err(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+            self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [_msg]})
 
 
     def process_each_command(self, command_id = 0, _command_list = None, step=''):
@@ -662,8 +665,9 @@ class Action(threading.Thread):
             try:
                 if int(self.data_command['type']) == 5:
                     sleep(int(self.data_command['delay']))
-                    stringhelpers.info("[DELAY COMMAND %s %s]" % (command_id, self.data_command['delay']),
-                                       socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+                    _msg = "[DELAY COMMAND %s %s]" % (command_id, self.data_command['delay'])
+                    stringhelpers.info(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+                    self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [_msg]})
                     return None
             except Exception as ex_error:
                 errror = ex_error
@@ -685,9 +689,9 @@ class Action(threading.Thread):
                 if is_loop is not None:
                     self.fang.execute_template_action_command(commands, blanks=2, error_reporting=True, timeout=-1, terminal=False)
                     result_fang = self.fang.get_action_output(self.log_output_file_name)
-                    stringhelpers.info_green(
-                        "\n[DISCOVERY] COMMAND '%s' IS LOOP '%s'| THREAD %s" % (commands[0], is_loop, self.name),
-                        socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+                    _msg = "\n[DISCOVERY] COMMAND '%s' IS LOOP '%s'| THREAD %s" % (commands[0], is_loop, self.name)
+                    stringhelpers.info_green(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+                    self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [result_fang, _msg]})
                     if is_loop == 'false':
                         self.parsing(command_id ,result_fang, commands[0], step) #parsing merge
                     else:
@@ -699,12 +703,14 @@ class Action(threading.Thread):
             else:
                 return None
         except Exception as e:
-            stringhelpers.err("[DISCOVERY] IRON ACTION PROCESS EACH COMMAND ERROR %s | THREAD %s COMMAND %s" % (e, self.name, command),
-                              socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+            _msg = "[DISCOVERY] IRON ACTION PROCESS EACH COMMAND ERROR %s | THREAD %s COMMAND %s" % (e, self.name, command)
+            stringhelpers.err(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+            self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [_msg]})
             return None
         except ConnectionError as errConn:
-            stringhelpers.err("[DISCOVERY] IRON ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name),
-                              socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
+            _msg = "[DISCOVERY] IRON ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name)
+            self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [_msg]})
+            stringhelpers.err(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             return None
 
 
