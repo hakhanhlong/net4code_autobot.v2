@@ -95,8 +95,9 @@ class IronManager(threading.Thread):
                             for x_sub in _sub_mops:
                                 arr_devices = []
                                 for k,v in x_sub['devices'].items():
-                                    arr_devices.append({'device_id': v['device_id'],'vendor':'%s|%s'%(v['vendor'],v['os']),'port':v['port']})
-                                submops.append({'subNo':x_sub['subNo'], 'name':x_sub['name'], 'devices': arr_devices, 'num_devices':len(arr_devices)})
+                                    arr_devices.append({'mop_id':x['mop_id'],'device_id': v['device_id'],'vendor':'%s|%s'%(v['vendor'],v['os']),'port':v['port']})
+                                submops.append({'subNo':x_sub['subNo'], 'name':x_sub['name'], 'devices': arr_devices,
+                                                'num_devices':len(arr_devices)})
                             params_mops['submops'] = submops
                             self._sockbotAPIHelpers.url = self._sockbotAPIURL.SOCKBOT_API_CREATE_MOP
                             self._sockbotAPIHelpers.params = params_mops
