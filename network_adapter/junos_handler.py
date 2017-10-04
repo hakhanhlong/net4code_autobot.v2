@@ -16,11 +16,11 @@ class JunosHandler(BaseHandler):
         self.device_id = device_id
 
     def send_sockbot_nonblocking(self):
-        while True:
-            s = self.session.read_nonblocking(4069)
-            self.socket_namespace.emit('on_device_terminal', {'device_id': self.device_id, 'arr_data_text': [s]})
-            if not self.session.isalive():
-                break
+        #while True:
+        s = self.session.read_nonblocking(4069)
+        self.socket_namespace.emit('on_device_terminal', {'device_id': self.device_id, 'arr_data_text': [s]})
+        #    if not self.session.isalive():
+        #        break
 
 
     def execute_command(self, command_list, blanks=0, error_reporting=False, timeout=30):
