@@ -38,6 +38,7 @@ class BaseHandler:
 
         self.session = pexpect.spawnu(cmd, timeout=self.timeout, maxread=1024 * 2, searchwindowsize=1024 * 4, encoding='utf8')
 
+
     def auth_failed(self, message):
         self.session.terminate()
         print(message)

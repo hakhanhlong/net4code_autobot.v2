@@ -10,8 +10,18 @@ class JunosHandler(BaseHandler):
     ''' junos handler to juniper network devices'''
 
     def __init__(self, host='', protocol='telnet', username='', password='', port=None, timeout=30,
-                 socketio=None, socket_namespace=None, socket_command=None):
+                 socketio=None, socket_namespace=None, socket_command=None, device_id=None):
         super().__init__(host, protocol, username, password, port, timeout,socketio, socket_namespace, socket_command)
+
+        self.device_id = device_id
+
+    def send_sockbot_nonblocking(self):
+        while True:
+            s = self.session.read_nonblocking(4069)
+            self.socket_namespace.emit('on_device_terminal', {'device_id': self.device_id, 'arr_data_text': [s]})
+            if not self.session.isalive():
+                break
+
 
     def execute_command(self, command_list, blanks=0, error_reporting=False, timeout=30):
         prompt = self.re_compile([

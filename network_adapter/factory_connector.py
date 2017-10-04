@@ -7,7 +7,7 @@ from ultils import stringhelpers
 class FactoryConnector:
     ''' Factory connector management'''
     def __init__(self, device_type, host='', protocol='telnet', username='', password='', port=None, timeout=30,
-                 socketio=None, socket_namespace=None, socket_command=None):
+                 socketio=None, socket_namespace=None, socket_command=None, device_id = None):
 
         self.device_type = device_type
         self.host = host
@@ -17,10 +17,11 @@ class FactoryConnector:
         self.port = port,
         self.timeout = timeout
         self.file_log_command = "%s.log" % (stringhelpers.generate_random_keystring(10))
-        self.device_id = None
+        self.device_id = device_id
         self.socketio = socketio
         self.socket_namespace = socket_namespace
         self.socket_command = socket_command
+
 
 
     def execute(self, commands=[]):
@@ -31,7 +32,8 @@ class FactoryConnector:
             'username': self.username,
             'password': self.password,
             'port': self.port[0],
-            'timeout': self.timeout
+            'timeout': self.timeout,
+            'device_id': self.device_id
         }
         if 'ios' == self.device_type:
             ios = IOSHandler(**parameters)
@@ -71,7 +73,8 @@ class FactoryConnector:
             'timeout': self.timeout,
             'socketio': self.socketio,
             'socket_namespace': self.socket_namespace,
-            'socket_command': self.socket_command
+            'socket_command': self.socket_command,
+            'device_id': self.device_id
         }
         if 'ios' == self.device_type:
             ios = IOSHandler(**parameters)
