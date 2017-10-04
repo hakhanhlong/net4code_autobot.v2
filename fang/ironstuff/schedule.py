@@ -118,7 +118,8 @@ class Schedule(threading.Thread):
                                         stringhelpers.info('\n[IRON][DISCOVERY][WAITING][%d minutes][%s]' % (int(self.mop_data['return_after']), self.name),
                                       socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
-                                        time_remaining = int(self.mop_data['return_after']) * 60
+                                        #time_remaining = int(self.mop_data['return_after']) * 60
+                                        time_remaining = 2 * 60
                                         for remaining in range(time_remaining, 0, -1):
 
                                             str_time = "Còn <strong>{:2d}s</strong> để chạy lần kế tiếp".format(remaining)

@@ -692,11 +692,11 @@ class Action(threading.Thread):
                 is_loop = self.data_action.get('is_loop', None)
                 if is_loop is not None:
                     self.fang.execute_template_action_command(commands, blanks=2, error_reporting=True, timeout=-1, terminal=False)
-                    self.fang.send_sockbot_nonblocking()
                     result_fang = self.fang.get_action_output(self.log_output_file_name)
                     _msg = "\n[DISCOVERY] COMMAND '%s' IS LOOP '%s'| THREAD %s" % (commands[0], is_loop, self.name)
                     stringhelpers.info_green(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
-                    #self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [result_fang, _msg]})
+                    self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [result_fang]})
+                    #self.fang.send_sockbot_nonblocking()
                     if is_loop == 'false':
                         self.parsing(command_id ,result_fang, commands[0], step) #parsing merge
                     else:
