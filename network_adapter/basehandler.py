@@ -6,7 +6,6 @@ import os
 
 from ultils import stringhelpers
 
-
 class BaseHandler:
     def __init__(self, host='', protocol='telnet', username='', password='', port=None, timeout=30,
                  socketio=None, socket_namespace=None, socket_command=None):

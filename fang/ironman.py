@@ -19,10 +19,6 @@ import os
 
 
 
-
-
-
-
 class IronManager(threading.Thread):
     """ Thread management ironman thread """
     def __init__(self, name, is_stop, socketio, socketio_iron):
