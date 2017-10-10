@@ -122,6 +122,9 @@ class Schedule(threading.Thread):
                                         time_remaining = 2 * 60
                                         for remaining in range(time_remaining, 0, -1):
 
+                                            if(remaining == 1):
+                                                remaining = 0
+
                                             str_time = "Còn <strong>{:2d}s</strong> để chạy lần kế tiếp".format(remaining)
                                             dict_time_remaining = {
                                                 'mop_id': self.mop_id,

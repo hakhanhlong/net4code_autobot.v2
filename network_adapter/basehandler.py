@@ -45,8 +45,8 @@ class BaseHandler:
 
     def command_error_reporter(self, command):
         print("\nCommand error detected at '{}'.".format(command))
-        print("Press '^]' to resume.")
-        print(self.session.match.group(0), self.session.interact())
+        #print("Press '^]' to resume.")
+        #print(self.session.match.group(0), self.session.interact())
 
     def re_compile(self, patterns):
         return [re.compile(pattern, re.S | re.M) for pattern in patterns]

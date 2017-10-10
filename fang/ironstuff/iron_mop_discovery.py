@@ -711,6 +711,7 @@ class Action(threading.Thread):
             _msg = "[DISCOVERY] IRON ACTION PROCESS EACH COMMAND ERROR %s | THREAD %s COMMAND %s" % (e, self.name, command)
             stringhelpers.err(_msg, socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
             #self.send_command_log_sockbot({'device_id': self.deviceid, 'arr_data_text': [_msg]})
+            #self.fang.terminal()
             return None
         except ConnectionError as errConn:
             _msg = "[DISCOVERY] IRON ACTION CONNECT API URL ERROR %s | THREAD %s" % (errConn, self.name)
