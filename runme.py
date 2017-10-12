@@ -18,6 +18,8 @@ logging.getLogger('socketIO-client-nexus').setLevel(logging.DEBUG)
 logging.basicConfig()
 
 
+from heartbeat import HeartBeat
+
 
 def main():
 
@@ -39,7 +41,7 @@ def main():
 
     _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False, dict_sockbot['io'],
                                    dict_sockbot['iron_namespace'])
-    _ironman_manager.start()
+    #_ironman_manager.start()
 
 
     #socket waiting response
