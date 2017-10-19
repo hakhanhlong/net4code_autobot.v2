@@ -19,6 +19,14 @@ logging.basicConfig()
 
 
 from heartbeat import HeartBeat
+import sys, os
+
+
+
+def on_startstop_autobot(*args):
+    print('STOP AUTOBOT', end='\n')
+    os._exit(1)
+
 
 
 def main():
@@ -42,6 +50,11 @@ def main():
     _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False, dict_sockbot['io'],
                                    dict_sockbot['iron_namespace'])
     #_ironman_manager.start()
+
+    heartbeat = HeartBeat(False, dict_sockbot['io'])
+    heartbeat.start()
+
+    dict_sockbot['io'].on('on_startstop_autobot', on_startstop_autobot)
 
 
     #socket waiting response
