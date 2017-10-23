@@ -241,6 +241,7 @@ class SubTemplate(threading.Thread):
             if not fac.is_alive():
                 return None
         else:
+            self.socketio_iron.emit('on_current_device', {'submop':self.submop_index, 'device_id':int(device['device_id'])})
             stringhelpers.info_green("\nIRON DISCOVERY CONNECTED DEVICE [SUCCESS]: host=%s, port=%s, devicetype=%s \n" % (parameters['host'], parameters['port'], parameters['device_type']),
                                       socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
         #---------------------------------------------------------------------------------------------------------------
