@@ -49,7 +49,7 @@ def main():
 
     _ironman_manager = IronManager('IRONMAN-MANAGEMENT', False, dict_sockbot['io'],
                                    dict_sockbot['iron_namespace'])
-    #_ironman_manager.start()
+    _ironman_manager.start()
 
     heartbeat = HeartBeat(False, dict_sockbot['io'])
     heartbeat.start()
