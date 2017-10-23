@@ -32,7 +32,7 @@ def on_startstop_autobot(*args):
 def main():
 
     connect(host="mongodb://27.78.16.56:8040/iron_man")
-    #connect(host="mongodb://27.78.16.56:8040/ironmanV2")
+    #connect(host="mongodb://27.78.16.56:8040/ironmanV2")# push
 
     stringhelpers.print_welcome()
 
