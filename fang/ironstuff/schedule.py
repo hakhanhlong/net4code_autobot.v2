@@ -119,17 +119,15 @@ class Schedule(threading.Thread):
                                       socket_namespace=self.socketio_iron, on_command_text='overall_terminal')
 
                                         #time_remaining = int(self.mop_data['return_after']) * 60
-                                        time_remaining = 2 * 60
+                                        time_remaining = 1 * 60
                                         for remaining in range(time_remaining, 0, -1):
 
-                                            if(remaining == 1):
-                                                remaining = 0
 
                                             str_time = "Còn <strong>{:2d}s</strong> để chạy lần kế tiếp".format(remaining)
                                             dict_time_remaining = {
                                                 'mop_id': self.mop_id,
                                                 'text': str_time,
-                                                'time_count': "{:2d}".format(remaining)
+                                                'time_count': "{:2d}".format(remaining).strip()
                                             }
                                             self.socketio_iron.emit('running_time_remain_mop', dict_time_remaining)
                                             time.sleep(1)

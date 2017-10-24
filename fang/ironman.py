@@ -76,7 +76,7 @@ class IronManager(threading.Thread):
 
                             schedule = Schedule("SCHEDULE-%d" % (mop_id), x, _sub_mops,  dict_schedule, False,
                                                 mechanism, mop_id, queue_discovery, x['output_mapping'], self.socketio, self.socketio_iron)
-                            arr_schedule_manage.append(schedule)
+                            #arr_schedule_manage.append(schedule)
 
                             #-----------------------process call api sockbot mop---------------------------------------
 
@@ -100,11 +100,13 @@ class IronManager(threading.Thread):
                             self._sockbotAPIHelpers.params = params_mops
                             self._sockbotAPIHelpers.post_json()
 
+                            schedule.start()
+
                             #------------------------------------------------------------------------------------------
 
                 if len(arr_schedule_manage) > 0:
-                    for schedule in arr_schedule_manage:
-                        schedule.start()
+                    #for schedule in arr_schedule_manage:
+                    #    schedule.start()
 
                     arr_schedule_manage.clear()
             except Exception as e:

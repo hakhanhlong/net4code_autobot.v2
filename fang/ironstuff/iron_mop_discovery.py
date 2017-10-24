@@ -5,15 +5,10 @@ from api.request_url import RequestURL
 from network_adapter.factory_connector import FactoryConnector
 from . import func_compare
 
-
-from database.impl.interfaces_Impl import InterfaceImpl
 from database.impl.networkobject_impl import NetworkObjectImpl
-from database.impl.lldp_impl import LLDPImpl
-
-
 from datetime import datetime
 from time import time, sleep
-from bson import json_util
+
 import json
 
 
